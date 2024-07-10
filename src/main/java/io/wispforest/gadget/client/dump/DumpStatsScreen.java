@@ -12,10 +12,10 @@ import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.container.ScrollContainer;
 import io.wispforest.owo.ui.core.*;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.jetbrains.annotations.NotNull;
 
@@ -71,13 +71,13 @@ public class DumpStatsScreen extends BaseOwoScreen<FlowLayout> {
                 double sizePercent = (double) x.getValue().size / totalSize;
                 double totalPercent = (double) x.getValue().total / reader.packets().size();
 
-                MutableText total = Text.literal(x.getKey())
-                    .append(Text.literal(" " + x.getValue().total + " packets,")
-                        .formatted(Formatting.GRAY))
-                    .append(Text.literal(" " + NumberUtil.formatFileSize(x.getValue().size) + " total")
-                        .formatted(Formatting.GRAY))
-                    .append(Text.literal("\n  " + NumberUtil.formatPercent(sizePercent) + " of size"))
-                    .append(Text.literal("\n  " + NumberUtil.formatPercent(totalPercent) + " of packets"));
+                MutableComponent total = Component.literal(x.getKey())
+                    .append(Component.literal(" " + x.getValue().total + " packets,")
+                        .withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(" " + NumberUtil.formatFileSize(x.getValue().size) + " total")
+                        .withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal("\n  " + NumberUtil.formatPercent(sizePercent) + " of size"))
+                    .append(Component.literal("\n  " + NumberUtil.formatPercent(totalPercent) + " of packets"));
 
                 main.child(Components.label(total)
                     .margins(Insets.bottom(3)));
@@ -85,7 +85,7 @@ public class DumpStatsScreen extends BaseOwoScreen<FlowLayout> {
 
         SidebarBuilder sidebar = new SidebarBuilder();
 
-        sidebar.button("text.gadget.back", (mouseX, mouseY) -> close());
+        sidebar.button("text.gadget.back", (mouseX, mouseY) -> onClose());
 
         rootComponent
             .child(scroll)
@@ -93,8 +93,8 @@ public class DumpStatsScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     @Override
-    public void close() {
-        client.setScreen(parent);
+    public void onClose() {
+        minecraft.setScreen(parent);
     }
 
     private static class PacketTypeData {

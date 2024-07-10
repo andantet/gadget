@@ -7,12 +7,12 @@ import io.wispforest.owo.ui.core.OwoUIDrawContext;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ParentElement;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ public class UIInspector {
         Gadget.LOGGER.info("Widget tree for screen:\n{}", sb);
     }
 
-    private static void writeWidgetTree(Element element, int indent, StringBuilder sb) {
+    private static void writeWidgetTree(GuiEventListener element, int indent, StringBuilder sb) {
         sb.append(" ".repeat(indent));
         sb.append(ReflectionUtil.nameWithoutPackage(element.getClass()));
         sb.append(" ");
@@ -81,7 +81,7 @@ public class UIInspector {
         sb.append(ElementUtils.height(element));
         sb.append(")\n");
 
-        if (element instanceof ParentElement parent) {
+        if (element instanceof ContainerEventHandler parent) {
             for (var child : parent.children()) {
                 writeWidgetTree(child, indent + 1, sb);
             }
@@ -99,17 +99,17 @@ public class UIInspector {
     }
 
     // Mostly copied (and modified) from Drawer$DebugDrawer#drawInspector
-    public void drawInspector(Screen screen, DrawContext ctxIn, int mouseX, int mouseY, float tickDelta) {
+    public void drawInspector(Screen screen, GuiGraphics ctxIn, int mouseX, int mouseY, float tickDelta) {
         if (!enabled()) return;
 
         OwoUIDrawContext ctx = OwoUIDrawContext.of(ctxIn);
 
         RenderSystem.disableDepthTest();
-        var client = MinecraftClient.getInstance();
-        var textRenderer = client.textRenderer;
+        var client = Minecraft.getInstance();
+        var textRenderer = client.font;
 
         var parents = ElementUtils.listRootElements(screen);
-        var children = new ArrayList<Element>();
+        var children = new ArrayList<GuiEventListener>();
 
         for (var parent : parents) {
             ElementUtils.collectChildren(parent, children);
@@ -134,7 +134,7 @@ public class UIInspector {
             if (!ElementUtils.isVisible(child)) continue;
             if (ElementUtils.x(child) == -1) continue;
 
-            ctx.getMatrices().translate(0, 0, 1000);
+            ctx.pose().translate(0, 0, 1000);
 
             ctx.drawRectOutline(ElementUtils.x(child), ElementUtils.y(child), ElementUtils.width(child), ElementUtils.height(child), 0xFF3AB0FF);
 
@@ -142,24 +142,24 @@ public class UIInspector {
 
                 int inspectorX = ElementUtils.x(child) + 1;
                 int inspectorY = ElementUtils.y(child) + ElementUtils.height(child) + 1;
-                int inspectorHeight = textRenderer.fontHeight * 2 + 4;
+                int inspectorHeight = textRenderer.lineHeight * 2 + 4;
 
-                if (inspectorY > client.getWindow().getScaledHeight() - inspectorHeight) {
+                if (inspectorY > client.getWindow().getGuiScaledHeight() - inspectorHeight) {
                     inspectorY -= ElementUtils.height(child) + inspectorHeight + 1;
                     if (inspectorY < 0) inspectorY = 1;
                 }
 
-                final var nameText = Text.of(ReflectionUtil.nameWithoutPackage(child.getClass()));
-                final var descriptor = Text.literal(ElementUtils.x(child) + "," + ElementUtils.y(child) + " (" + ElementUtils.width(child) + "," + ElementUtils.height(child) + ")");
+                final var nameText = Component.nullToEmpty(ReflectionUtil.nameWithoutPackage(child.getClass()));
+                final var descriptor = Component.literal(ElementUtils.x(child) + "," + ElementUtils.y(child) + " (" + ElementUtils.width(child) + "," + ElementUtils.height(child) + ")");
 
-                int width = Math.max(textRenderer.getWidth(nameText), textRenderer.getWidth(descriptor));
+                int width = Math.max(textRenderer.width(nameText), textRenderer.width(descriptor));
                 ctx.fill(inspectorX, inspectorY, inspectorX + width + 3, inspectorY + inspectorHeight, 0xA7000000);
                 ctx.drawRectOutline(inspectorX, inspectorY, width + 3, inspectorHeight, 0xA7000000);
 
-                ctx.drawText(textRenderer, nameText, inspectorX + 2, inspectorY + 2, 0xFFFFFF, false);
-                ctx.drawText(textRenderer, descriptor, inspectorX + 2, inspectorY + textRenderer.fontHeight + 2, 0xFFFFFF, false);
+                ctx.drawString(textRenderer, nameText, inspectorX + 2, inspectorY + 2, 0xFFFFFF, false);
+                ctx.drawString(textRenderer, descriptor, inspectorX + 2, inspectorY + textRenderer.lineHeight + 2, 0xFFFFFF, false);
             }
-            ctx.getMatrices().translate(0, 0, -1000);
+            ctx.pose().translate(0, 0, -1000);
         }
 
         RenderSystem.enableDepthTest();

@@ -1,64 +1,64 @@
 package io.wispforest.gadget.client.nbt;
 
-import net.minecraft.nbt.AbstractNbtList;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.CollectionTag;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 
 import java.util.Arrays;
 
 public record NbtPath(String[] steps) {
     public static final NbtPath EMPTY = new NbtPath(new String[0]);
 
-    public NbtElement follow(NbtElement start) {
+    public Tag follow(Tag start) {
         for (String element : steps) {
-            if (start instanceof NbtCompound compound)
+            if (start instanceof CompoundTag compound)
                 start = compound.get(element);
-            else if (start instanceof AbstractNbtList<?> list)
+            else if (start instanceof CollectionTag<?> list)
                 start = list.get(Integer.parseInt(element));
         }
 
         return start;
     }
 
-    public void set(NbtElement start, NbtElement to) {
+    public void set(Tag start, Tag to) {
         for (int i = 0; i < steps.length - 1; i++) {
-            if (start instanceof NbtCompound compound)
+            if (start instanceof CompoundTag compound)
                 start = compound.get(steps[i]);
-            else if (start instanceof AbstractNbtList<?> list)
+            else if (start instanceof CollectionTag<?> list)
                 start = list.get(Integer.parseInt(steps[i]));
         }
 
-        if (start instanceof NbtCompound compound)
+        if (start instanceof CompoundTag compound)
             compound.put(steps[steps.length - 1], to);
-        else if (start instanceof AbstractNbtList<?> list)
-            list.setElement(Integer.parseInt(steps[steps.length - 1]), to);
+        else if (start instanceof CollectionTag<?> list)
+            list.setTag(Integer.parseInt(steps[steps.length - 1]), to);
     }
 
-    public void add(NbtElement start, NbtElement to) {
+    public void add(Tag start, Tag to) {
         for (int i = 0; i < steps.length - 1; i++) {
-            if (start instanceof NbtCompound compound)
+            if (start instanceof CompoundTag compound)
                 start = compound.get(steps[i]);
-            else if (start instanceof AbstractNbtList<?> list)
+            else if (start instanceof CollectionTag<?> list)
                 start = list.get(Integer.parseInt(steps[i]));
         }
 
-        if (start instanceof NbtCompound compound)
+        if (start instanceof CompoundTag compound)
             compound.put(steps[steps.length - 1], to);
-        else if (start instanceof AbstractNbtList<?> list)
-            list.addElement(Integer.parseInt(steps[steps.length - 1]), to);
+        else if (start instanceof CollectionTag<?> list)
+            list.addTag(Integer.parseInt(steps[steps.length - 1]), to);
     }
 
-    public void remove(NbtElement start) {
+    public void remove(Tag start) {
         for (int i = 0; i < steps.length - 1; i++) {
-            if (start instanceof NbtCompound compound)
+            if (start instanceof CompoundTag compound)
                 start = compound.get(steps[i]);
-            else if (start instanceof AbstractNbtList<?> list)
+            else if (start instanceof CollectionTag<?> list)
                 start = list.get(Integer.parseInt(steps[i]));
         }
 
-        if (start instanceof NbtCompound compound)
+        if (start instanceof CompoundTag compound)
             compound.remove(steps[steps.length - 1]);
-        else if (start instanceof AbstractNbtList<?> list)
+        else if (start instanceof CollectionTag<?> list)
             list.remove(Integer.parseInt(steps[steps.length - 1]));
     }
 

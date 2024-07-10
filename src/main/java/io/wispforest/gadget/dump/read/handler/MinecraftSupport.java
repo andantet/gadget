@@ -2,11 +2,11 @@ package io.wispforest.gadget.dump.read.handler;
 
 import io.wispforest.gadget.dump.read.unwrapped.LinesUnwrappedPacket;
 import io.wispforest.gadget.util.ErrorSink;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.BrandCustomPayload;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.custom.BrandPayload;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +14,9 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public final class MinecraftSupport {
-    public static final Identifier REGISTER_CHANNEL = new Identifier("minecraft", "register");
+    public static final ResourceLocation REGISTER_CHANNEL = new ResourceLocation("minecraft", "register");
 
-    public static final Identifier UNREGISTER_CHANNEL = new Identifier("minecraft", "unregister");
+    public static final ResourceLocation UNREGISTER_CHANNEL = new ResourceLocation("minecraft", "unregister");
 
     private MinecraftSupport() {
 
@@ -24,10 +24,10 @@ public final class MinecraftSupport {
 
     public static void init() {
         PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            if (!Objects.equals(packet.channelId(), BrandCustomPayload.ID)) return null;
+            if (!Objects.equals(packet.channelId(), BrandPayload.ID)) return null;
 
-            PacketByteBuf buf = packet.wrappedBuf();
-            String brand = buf.readString();
+            FriendlyByteBuf buf = packet.wrappedBuf();
+            String brand = buf.readUtf();
 
             return new BrandPacket(brand);
         });
@@ -43,9 +43,9 @@ public final class MinecraftSupport {
                 return null;
             }
 
-            PacketByteBuf buf = packet.wrappedBuf();
+            FriendlyByteBuf buf = packet.wrappedBuf();
             StringBuilder more = new StringBuilder();
-            List<Identifier> channels = new ArrayList<>();
+            List<ResourceLocation> channels = new ArrayList<>();
 
             while (buf.isReadable()) {
                 byte next = buf.readByte();
@@ -53,7 +53,7 @@ public final class MinecraftSupport {
                 if (next != 0) {
                     more.append((char) next);
                 } else {
-                    channels.add(new Identifier(more.toString()));
+                    channels.add(new ResourceLocation(more.toString()));
 
                     more = new StringBuilder();
                 }
@@ -65,29 +65,29 @@ public final class MinecraftSupport {
 
     public record BrandPacket(String brand) implements LinesUnwrappedPacket {
         @Override
-        public void render(Consumer<Text> out, ErrorSink errSink) {
+        public void render(Consumer<Component> out, ErrorSink errSink) {
             out.accept(
-                Text.literal("brand")
-                    .append(Text.literal(" = \"" + brand + "\"")
-                        .formatted(Formatting.GRAY)));
+                Component.literal("brand")
+                    .append(Component.literal(" = \"" + brand + "\"")
+                        .withStyle(ChatFormatting.GRAY)));
         }
     }
 
-    public record RegisterPacket(boolean isUnregister, List<Identifier> channels) implements LinesUnwrappedPacket {
+    public record RegisterPacket(boolean isUnregister, List<ResourceLocation> channels) implements LinesUnwrappedPacket {
         @Override
-        public void render(Consumer<Text> out, ErrorSink errSink) {
-            Text header = !isUnregister
-                ? Text.literal("+ ")
-                    .formatted(Formatting.GREEN)
-                : Text.literal("- ")
-                    .formatted(Formatting.RED);
+        public void render(Consumer<Component> out, ErrorSink errSink) {
+            Component header = !isUnregister
+                ? Component.literal("+ ")
+                    .withStyle(ChatFormatting.GREEN)
+                : Component.literal("- ")
+                    .withStyle(ChatFormatting.RED);
 
-            for (Identifier channel : channels) {
+            for (ResourceLocation channel : channels) {
                 out.accept(
-                    Text.literal("")
+                    Component.literal("")
                         .append(header)
-                        .append(Text.literal(channel.toString())
-                            .formatted(Formatting.GRAY)));
+                        .append(Component.literal(channel.toString())
+                            .withStyle(ChatFormatting.GRAY)));
             }
         }
     }

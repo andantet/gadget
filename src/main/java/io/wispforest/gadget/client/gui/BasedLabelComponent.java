@@ -2,10 +2,10 @@ package io.wispforest.gadget.client.gui;
 
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.core.Size;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public class BasedLabelComponent extends LabelComponent {
-    public BasedLabelComponent(Text text) {
+    public BasedLabelComponent(Component text) {
         super(text);
     }
 

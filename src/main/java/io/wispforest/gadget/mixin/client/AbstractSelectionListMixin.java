@@ -1,9 +1,9 @@
 package io.wispforest.gadget.mixin.client;
 
 import io.wispforest.gadget.Gadget;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ParentElement;
-import net.minecraft.client.gui.widget.EntryListWidget;
+import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,11 +12,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(EntryListWidget.class)
-public abstract class EntryListWidgetMixin<E extends EntryListWidget.Entry<E>> {
-    @Shadow public abstract void setFocused(net.minecraft.client.gui.Element focused);
+@Mixin(AbstractSelectionList.class)
+public abstract class AbstractSelectionListMixin<E extends AbstractSelectionList.Entry<E>> {
+    @Shadow public abstract void setFocused(GuiEventListener focused);
 
-    @Shadow @Nullable protected abstract EntryListWidget.Entry<?> getEntryAtPosition(double x, double y);
+    @Shadow @Nullable protected abstract AbstractSelectionList.Entry<?> getEntryAtPosition(double x, double y);
 
     @Shadow @Nullable public abstract E getFocused();
 
@@ -28,14 +28,14 @@ public abstract class EntryListWidgetMixin<E extends EntryListWidget.Entry<E>> {
                 return;
             }
 
-            EntryListWidget.Entry<?> clickedEntry = this.getEntryAtPosition(mouseX, mouseY);
+            AbstractSelectionList.Entry<?> clickedEntry = this.getEntryAtPosition(mouseX, mouseY);
             if (clickedEntry != null) {
                 if (clickedEntry.mouseClicked(mouseX, mouseY, button)) {
                     E parentEntry = this.getFocused();
 
-                    if (clickedEntry != parentEntry && parentEntry instanceof ParentElement) {
-                        ParentElement parentElement = (ParentElement) parentEntry;
-                        parentElement.setFocused((Element) null);
+                    if (clickedEntry != parentEntry && parentEntry instanceof ContainerEventHandler) {
+                        ContainerEventHandler parentElement = (ContainerEventHandler) parentEntry;
+                        parentElement.setFocused((GuiEventListener) null);
                     }
 
                     this.setFocused(clickedEntry);

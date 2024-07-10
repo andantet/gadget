@@ -1,7 +1,6 @@
 package io.wispforest.gadget.client.resource;
 
 import io.wispforest.gadget.Gadget;
-import io.wispforest.gadget.early.GadgetMixinExtension;
 import io.wispforest.gadget.client.DialogUtil;
 import io.wispforest.gadget.client.gui.GuiUtil;
 import io.wispforest.gadget.client.gui.LayoutCacheWrapper;
@@ -9,6 +8,7 @@ import io.wispforest.gadget.client.gui.SubObjectContainer;
 import io.wispforest.gadget.decompile.KnotUtil;
 import io.wispforest.gadget.decompile.QuiltflowerHandler;
 import io.wispforest.gadget.decompile.QuiltflowerManager;
+import io.wispforest.gadget.early.GadgetMixinExtension;
 import io.wispforest.gadget.util.ProgressToast;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.component.Components;
@@ -17,10 +17,9 @@ import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.container.ScrollContainer;
 import io.wispforest.owo.ui.core.*;
 import io.wispforest.owo.ui.util.UISounds;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
@@ -50,11 +49,11 @@ public class ViewClassesScreen extends BaseOwoScreen<FlowLayout> {
         this.showAll = showAll;
         this.toast = toast;
 
-        toast.step(Text.translatable("message.gadget.progress.loading_quiltflower"));
+        toast.step(Component.translatable("message.gadget.progress.loading_quiltflower"));
         decompiler = QuiltflowerManager.loadHandler(toast, text -> {
-            assert client != null;
+            assert minecraft != null;
 
-            client.execute(() -> {
+            minecraft.execute(() -> {
                 var label = Components.label(text);
                 contents.child(new LayoutCacheWrapper<>(label));
                 contentsScroll.scrollTo(label);
@@ -63,8 +62,8 @@ public class ViewClassesScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     public static void openWithProgress(Screen parent) {
-        ProgressToast toast = ProgressToast.create(Text.translatable("message.gadget.loading_classes"));
-        MinecraftClient client = MinecraftClient.getInstance();
+        ProgressToast toast = ProgressToast.create(Component.translatable("message.gadget.loading_classes"));
+        Minecraft client = Minecraft.getInstance();
         boolean showAll = Screen.hasShiftDown();
 
         toast.follow(
@@ -103,7 +102,7 @@ public class ViewClassesScreen extends BaseOwoScreen<FlowLayout> {
                 .margins(Insets.right(3)))
             .child(contentsScroll);
 
-        toast.step(Text.translatable("message.gadget.progress.building_screen"));
+        toast.step(Component.translatable("message.gadget.progress.building_screen"));
         TreeEntry root = new TreeEntry("", tree);
 
         Set<String> allClasses;
@@ -133,7 +132,7 @@ public class ViewClassesScreen extends BaseOwoScreen<FlowLayout> {
 
             parent.container.child(makeRecipeRow(split[split.length - 1], fullPath));
         }
-        toast.step(Text.literal(""));
+        toast.step(Component.literal(""));
     }
 
     @Override
@@ -164,7 +163,7 @@ public class ViewClassesScreen extends BaseOwoScreen<FlowLayout> {
 
     private FlowLayout makeRecipeRow(String name, String fullPath) {
         var row = Containers.horizontalFlow(Sizing.content(), Sizing.content());
-        var fileLabel = Components.label(Text.literal(name));
+        var fileLabel = Components.label(Component.literal(name));
 
         row.child(fileLabel);
         row.mouseEnter().subscribe(
@@ -188,7 +187,7 @@ public class ViewClassesScreen extends BaseOwoScreen<FlowLayout> {
                                     .replace('/', '.')))
                         );
 
-                        client.execute(() -> {
+                        minecraft.execute(() -> {
                             currentFileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
                             currentFileContents = text;
 
@@ -200,7 +199,7 @@ public class ViewClassesScreen extends BaseOwoScreen<FlowLayout> {
                             contentsScroll.scrollTo(contents);
                         });
                     } catch (Exception e) {
-                        client.execute(() -> {
+                        minecraft.execute(() -> {
                             contents.configure(unused -> {
                                 contents.clearChildren();
                                 contents.child(GuiUtil.showException(e));
@@ -213,7 +212,7 @@ public class ViewClassesScreen extends BaseOwoScreen<FlowLayout> {
                 String filename = fullPath.substring(fullPath.lastIndexOf('/') + 1);
 
                 GuiUtil.contextMenu(row, mouseX, mouseY)
-                    .button(Text.translatable("text.gadget.save_as_java"), unused -> {
+                    .button(Component.translatable("text.gadget.save_as_java"), unused -> {
                         String path = DialogUtil.saveFileDialog(
                             "Save as .java",
                             filename.replace(".class", ".java"),
@@ -229,7 +228,7 @@ public class ViewClassesScreen extends BaseOwoScreen<FlowLayout> {
                             }
                         }
                     })
-                    .button(Text.translatable("text.gadget.save_as_class"), unused -> {
+                    .button(Component.translatable("text.gadget.save_as_class"), unused -> {
                         String path = DialogUtil.saveFileDialog(
                             "Save as .class",
                             filename,
@@ -259,8 +258,8 @@ public class ViewClassesScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     @Override
-    public void close() {
-        client.setScreen(parent);
+    public void onClose() {
+        minecraft.setScreen(parent);
     }
 
     private static class TreeEntry {
@@ -287,7 +286,7 @@ public class ViewClassesScreen extends BaseOwoScreen<FlowLayout> {
             container
                 .child(entryContainer
                     .child(row
-                        .child(Components.label(Text.literal(name)))
+                        .child(Components.label(Component.literal(name)))
                         .child(sub.getSpinnyBoi()
                             .margins(Insets.left(3))))
                     .child(sub));

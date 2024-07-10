@@ -7,7 +7,7 @@ import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.Insets;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.function.Consumer;
 
@@ -15,7 +15,7 @@ import java.util.function.Consumer;
  * A helper {@link UnwrappedPacket} rendered as colorful Text.
  */
 public interface LinesUnwrappedPacket extends UnwrappedPacket {
-    void render(Consumer<Text> out, ErrorSink errSink);
+    void render(Consumer<Component> out, ErrorSink errSink);
 
     @Override
     default void dumpAsPlainText(FormattedDumper out, int indent, ErrorSink errSink) {

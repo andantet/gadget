@@ -30,7 +30,7 @@ import net.fabricmc.mappingio.format.Tiny2Reader;
 import net.fabricmc.mappingio.format.Tiny2Writer;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import net.minecraft.SharedConstants;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,7 +41,7 @@ import java.nio.file.Path;
 import java.util.zip.GZIPInputStream;
 
 public class QuiltMappings extends LoadingMappings {
-    private static final String QM_API_ENTRYPOINT = "https://meta.quiltmc.org/v3/versions/quilt-mappings/" + SharedConstants.getGameVersion().getId();
+    private static final String QM_API_ENTRYPOINT = "https://meta.quiltmc.org/v3/versions/quilt-mappings/" + SharedConstants.getCurrentVersion().getId();
 
     @Override
     protected void load(ProgressToast toast, MappingVisitor visitor) {
@@ -50,7 +50,7 @@ public class QuiltMappings extends LoadingMappings {
 
             Files.createDirectories(mappingsDir);
 
-            Path qmPath = mappingsDir.resolve("qm-" + SharedConstants.getGameVersion().getId() + ".tiny");
+            Path qmPath = mappingsDir.resolve("qm-" + SharedConstants.getCurrentVersion().getId() + ".tiny");
 
             if (Files.exists(qmPath)) {
                 try (BufferedReader br = Files.newBufferedReader(qmPath)) {
@@ -59,7 +59,7 @@ public class QuiltMappings extends LoadingMappings {
                 }
             }
 
-            toast.step(Text.translatable("message.gadget.progress.downloading_qm_versions"));
+            toast.step(Component.translatable("message.gadget.progress.downloading_qm_versions"));
 
             QMVersion[] versions = DownloadUtil.read(toast, QM_API_ENTRYPOINT, QMVersion[].class);
 
@@ -88,7 +88,7 @@ public class QuiltMappings extends LoadingMappings {
                     + latestVersion
                     + "-tiny.gz");
 
-            toast.step(Text.translatable("message.gadget.progress.downloading_qm"));
+            toast.step(Component.translatable("message.gadget.progress.downloading_qm"));
             try (var is = toast.loadWithProgress(url);
                  var gz = new GZIPInputStream(is)) {
                 Tiny2Reader.read(new InputStreamReader(gz), tree);

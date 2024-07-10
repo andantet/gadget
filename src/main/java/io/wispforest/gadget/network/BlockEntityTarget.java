@@ -1,12 +1,12 @@
 package io.wispforest.gadget.network;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 public record BlockEntityTarget(BlockPos pos) implements InspectionTarget {
     @Override
-    public @Nullable Object resolve(World w) {
-        return w.getBlockEntity(pos);
+    public @Nullable Object resolve(Level l) {
+        return l.getBlockEntity(pos);
     }
 }

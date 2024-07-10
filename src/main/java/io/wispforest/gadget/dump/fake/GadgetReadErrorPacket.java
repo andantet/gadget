@@ -2,14 +2,14 @@ package io.wispforest.gadget.dump.fake;
 
 import io.wispforest.gadget.dump.read.unwrapped.UnprocessedUnwrappedPacket;
 import io.wispforest.gadget.dump.read.unwrapped.UnwrappedPacket;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.NetworkState;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.ConnectionProtocol;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.PacketFlow;
 
 public record GadgetReadErrorPacket(byte[] data, int packetId, Exception exception) implements FakeGadgetPacket {
     public static final int ID = -3;
 
-    public static GadgetReadErrorPacket from(PacketByteBuf buf, int packetId, Exception exception) {
+    public static GadgetReadErrorPacket from(FriendlyByteBuf buf, int packetId, Exception exception) {
         byte[] data = new byte[buf.readableBytes()];
         buf.readBytes(data);
 
@@ -22,7 +22,7 @@ public record GadgetReadErrorPacket(byte[] data, int packetId, Exception excepti
     }
 
     @Override
-    public void writeToDump(PacketByteBuf buf, NetworkState state, NetworkSide side) {
+    public void writeToDump(FriendlyByteBuf buf, ConnectionProtocol state, PacketFlow side) {
         throw new UnsupportedOperationException();
     }
 

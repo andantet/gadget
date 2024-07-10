@@ -1,11 +1,11 @@
 package io.wispforest.gadget.dump.fake;
 
 import io.wispforest.gadget.dump.read.unwrapped.UnwrappedPacket;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.NetworkState;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.listener.PacketListener;
-import net.minecraft.network.packet.Packet;
+import net.minecraft.network.ConnectionProtocol;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketFlow;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 public interface FakeGadgetPacket extends Packet<PacketListener> {
     int id();
 
-    void writeToDump(PacketByteBuf buf, NetworkState state, NetworkSide side);
+    void writeToDump(FriendlyByteBuf buf, ConnectionProtocol state, PacketFlow side);
 
     default Packet<?> unwrapVanilla() {
         return this;
@@ -25,17 +25,17 @@ public interface FakeGadgetPacket extends Packet<PacketListener> {
     }
 
     @Override
-    default void write(PacketByteBuf buf) {
+    default void write(FriendlyByteBuf buf) {
         throw new IllegalStateException();
     }
 
     @Override
-    default void apply(PacketListener listener) {
+    default void handle(PacketListener listener) {
         throw new IllegalStateException();
     }
 
     @FunctionalInterface
     interface Reader<T extends FakeGadgetPacket> {
-        T read(PacketByteBuf buf, NetworkState state, NetworkSide side);
+        T read(FriendlyByteBuf buf, ConnectionProtocol state, PacketFlow side);
     }
 }

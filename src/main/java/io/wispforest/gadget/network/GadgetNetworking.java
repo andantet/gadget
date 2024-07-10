@@ -12,10 +12,10 @@ import io.wispforest.owo.network.OwoNetChannel;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSets;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -35,15 +35,15 @@ public final class GadgetNetworking {
 
         CHANNEL.registerServerbound(OpenFieldDataScreenC2SPacket.class, (packet, access) -> {
             if (!Permissions.check(access.player(), "gadget.inspect", 4)) {
-                access.player().sendMessage(Text.translatable("message.gadget.fail.permissions"), true);
+                access.player().displayClientMessage(Component.translatable("message.gadget.fail.permissions"), true);
                 return;
             }
 
 
-            Object target = packet.target().resolve(access.player().getWorld());
+            Object target = packet.target().resolve(access.player().level());
 
             if (target == null) {
-                access.player().sendMessage(Text.translatable("message.gadget.fail.notfound"), true);
+                access.player().displayClientMessage(Component.translatable("message.gadget.fail.notfound"), true);
                 return;
             }
 
@@ -59,19 +59,19 @@ public final class GadgetNetworking {
 
         CHANNEL.registerServerbound(FieldDataRequestC2SPacket.class, (packet, access) -> {
             if (!Permissions.check(access.player(), "gadget.inspect", 4)) {
-                MutableText errText = Text.translatable("message.gadget.fail.permissions");
+                MutableComponent errText = Component.translatable("message.gadget.fail.permissions");
                 CHANNEL.serverHandle(access.player()).send(packet.replyWithError(errText));
-                access.player().sendMessage(errText, true);
+                access.player().displayClientMessage(errText, true);
                 return;
             }
 
             try {
-                Object target = packet.target().resolve(access.player().getWorld());
+                Object target = packet.target().resolve(access.player().level());
 
                 if (target == null) {
-                    MutableText errText = Text.translatable("message.gadget.fail.notfound");
+                    MutableComponent errText = Component.translatable("message.gadget.fail.notfound");
                     CHANNEL.serverHandle(access.player()).send(packet.replyWithError(errText));
-                    access.player().sendMessage(errText, true);
+                    access.player().displayClientMessage(errText, true);
                     return;
                 }
 
@@ -81,40 +81,40 @@ public final class GadgetNetworking {
 
                 CHANNEL.serverHandle(access.player()).send(new FieldDataResponseS2CPacket(packet.target(), packet.path(), fields));
             } catch (Exception e) {
-                MutableText errText = Text.literal(e.toString());
+                MutableComponent errText = Component.literal(e.toString());
                 CHANNEL.serverHandle(access.player()).send(packet.replyWithError(errText));
                 Gadget.LOGGER.error("Encountered error while gathering field data for {}.{}", packet.target(), packet.path(), e);
-                access.player().sendMessage(errText, true);
+                access.player().displayClientMessage(errText, true);
             }
         });
 
         CHANNEL.registerServerbound(FieldDataSetPrimitiveC2SPacket.class, (packet, access) -> {
             if (!Permissions.check(access.player(), "gadget.inspect", 4)) {
-                access.player().sendMessage(Text.translatable("message.gadget.fail.permissions"), true);
+                access.player().displayClientMessage(Component.translatable("message.gadget.fail.permissions"), true);
                 return;
             }
 
 
-            Object target = packet.target().resolve(access.player().getWorld());
+            Object target = packet.target().resolve(access.player().level());
 
             if (target == null) {
-                access.player().sendMessage(Text.translatable("message.gadget.fail.notfound"), true);
+                access.player().displayClientMessage(Component.translatable("message.gadget.fail.notfound"), true);
                 return;
             }
 
             packet.path().set(target, packet.data().toObject());
         });
 
-        CHANNEL.registerServerbound(FieldDataSetNbtCompoundC2SPacket.class, (packet, access) -> {
+        CHANNEL.registerServerbound(FieldDataSetCompoundTagC2SPacket.class, (packet, access) -> {
             if (!Permissions.check(access.player(), "gadget.inspect", 4)) {
-                access.player().sendMessage(Text.translatable("message.gadget.fail.permissions"), true);
+                access.player().displayClientMessage(Component.translatable("message.gadget.fail.permissions"), true);
                 return;
             }
 
-            Object target = packet.target().resolve(access.player().getWorld());
+            Object target = packet.target().resolve(access.player().level());
 
             if (target == null) {
-                access.player().sendMessage(Text.translatable("message.gadget.fail.notfound"), true);
+                access.player().displayClientMessage(Component.translatable("message.gadget.fail.notfound"), true);
                 return;
             }
 
@@ -123,27 +123,27 @@ public final class GadgetNetworking {
 
         CHANNEL.registerServerbound(ReplaceStackC2SPacket.class, (packet, access) -> {
             if (!Permissions.check(access.player(), "gadget.replaceStack", 4)) {
-                access.player().sendMessage(Text.translatable("message.gadget.fail.permissions"));
+                access.player().sendSystemMessage(Component.translatable("message.gadget.fail.permissions"));
                 return;
             }
 
-            ScreenHandler screenHandler = access.player().currentScreenHandler;
+            AbstractContainerMenu screenHandler = access.player().containerMenu;
 
             if (screenHandler == null)
                 return;
 
-            screenHandler.slots.get(packet.slotId()).setStack(packet.stack());
+            screenHandler.slots.get(packet.slotId()).setByPlayer(packet.stack());
         });
 
         CHANNEL.registerServerbound(ListResourcesC2SPacket.class, (packet, access) -> {
             if (!Permissions.check(access.player(), "gadget.requestServerData", 4)) {
-                access.player().sendMessage(Text.translatable("message.gadget.fail.permissions"), true);
+                access.player().displayClientMessage(Component.translatable("message.gadget.fail.permissions"), true);
                 return;
             }
 
             var resources =
                 ResourceUtil.collectAllResources(access.runtime().getResourceManager());
-            var network = new HashMap<Identifier, Integer>();
+            var network = new HashMap<ResourceLocation, Integer>();
 
             for (var entry : resources.entrySet())
                 network.put(entry.getKey(), entry.getValue().size());
@@ -153,15 +153,15 @@ public final class GadgetNetworking {
 
         CHANNEL.registerServerbound(RequestResourceC2SPacket.class, (packet, access) -> {
             if (!Permissions.check(access.player(), "gadget.requestServerData", 4)) {
-                access.player().sendMessage(Text.translatable("message.gadget.fail.permissions"), true);
+                access.player().displayClientMessage(Component.translatable("message.gadget.fail.permissions"), true);
                 return;
             }
 
-            var resources = access.runtime().getResourceManager().getAllResources(packet.id());
+            var resources = access.runtime().getResourceManager().getResourceStack(packet.id());
 
             try {
                 CHANNEL.serverHandle(access.player()).send(
-                    new ResourceDataS2CPacket(packet.id(), resources.get(packet.index()).getInputStream().readAllBytes()));
+                    new ResourceDataS2CPacket(packet.id(), resources.get(packet.index()).open().readAllBytes()));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

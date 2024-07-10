@@ -7,7 +7,7 @@ import io.wispforest.gadget.path.ObjectPath;
 import io.wispforest.gadget.path.PathStep;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSets;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +47,7 @@ public record LocalFieldDataSource(Object target, boolean isMutable) implements 
     }
 
     @Override
-    public CompletableFuture<Void> setNbtCompoundAt(ObjectPath path, NbtCompound tag) {
+    public CompletableFuture<Void> setCompoundTagAt(ObjectPath path, CompoundTag tag) {
         if (!isMutable())
             throw new UnsupportedOperationException();
 

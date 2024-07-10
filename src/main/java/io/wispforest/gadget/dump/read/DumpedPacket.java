@@ -1,21 +1,21 @@
 package io.wispforest.gadget.dump.read;
 
 import io.wispforest.gadget.util.ContextData;
-import net.minecraft.network.NetworkState;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.ConnectionProtocol;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.resources.ResourceLocation;
 
 public final class DumpedPacket extends ContextData<DumpedPacket> {
     private final boolean outbound;
-    private final NetworkState state;
+    private final ConnectionProtocol state;
     private final Packet<?> packet;
-    private final Identifier channelId;
-    private final PacketByteBuf wrappedBuf;
+    private final ResourceLocation channelId;
+    private final FriendlyByteBuf wrappedBuf;
     private final long sentAt;
     private final int size;
 
-    public DumpedPacket(boolean outbound, NetworkState state, Packet<?> packet, Identifier channelId, PacketByteBuf wrappedBuf,
+    public DumpedPacket(boolean outbound, ConnectionProtocol state, Packet<?> packet, ResourceLocation channelId, FriendlyByteBuf wrappedBuf,
                         long sentAt, int size) {
         this.outbound = outbound;
         this.state = state;
@@ -40,7 +40,7 @@ public final class DumpedPacket extends ContextData<DumpedPacket> {
         return outbound;
     }
 
-    public NetworkState state() {
+    public ConnectionProtocol state() {
         return state;
     }
 
@@ -48,11 +48,11 @@ public final class DumpedPacket extends ContextData<DumpedPacket> {
         return packet;
     }
 
-    public Identifier channelId() {
+    public ResourceLocation channelId() {
         return channelId;
     }
 
-    public PacketByteBuf wrappedBuf() {
+    public FriendlyByteBuf wrappedBuf() {
         return wrappedBuf;
     }
 

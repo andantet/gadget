@@ -1,19 +1,19 @@
 package io.wispforest.gadget.client.gui.inspector;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ParentElement;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.util.Pair;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.util.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
 public class ElementUtils {
-    private static final List<Pair<Class<?>, ElementSupport<?>>> ELEMENT_SUPPORTS = new ArrayList<>();
-    private static final List<BiConsumer<Screen, List<ParentElement>>> ROOT_LISTERS = new ArrayList<>();
+    private static final List<Tuple<Class<?>, ElementSupport<?>>> ELEMENT_SUPPORTS = new ArrayList<>();
+    private static final List<BiConsumer<Screen, List<ContainerEventHandler>>> ROOT_LISTERS = new ArrayList<>();
 
     static {
         VanillaSupport.init();
@@ -23,10 +23,10 @@ public class ElementUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static int getThroughSupport(Element element, ElementSupportGetter getter) {
+    private static int getThroughSupport(GuiEventListener element, ElementSupportGetter getter) {
         for (var pair : ELEMENT_SUPPORTS) {
-            if (pair.getLeft().isInstance(element)) {
-                ElementSupport<Element> support = (ElementSupport<Element>) pair.getRight();
+            if (pair.getA().isInstance(element)) {
+                ElementSupport<GuiEventListener> support = (ElementSupport<GuiEventListener>) pair.getB();
                 int val = getter.get(support, element);
 
                 if (val != -1)
@@ -37,16 +37,16 @@ public class ElementUtils {
         return -1;
     }
 
-    public static <T extends Element> void registerElementSupport(Class<T> klass, ElementSupport<T> support) {
-        ELEMENT_SUPPORTS.add(new Pair<>(klass, support));
+    public static <T extends GuiEventListener> void registerElementSupport(Class<T> klass, ElementSupport<T> support) {
+        ELEMENT_SUPPORTS.add(new Tuple<>(klass, support));
     }
 
-    public static void registerRootLister(BiConsumer<Screen, List<ParentElement>> rootLister) {
+    public static void registerRootLister(BiConsumer<Screen, List<ContainerEventHandler>> rootLister) {
         ROOT_LISTERS.add(rootLister);
     }
 
-    public static List<ParentElement> listRootElements(Screen screen) {
-        List<ParentElement> parents = new ArrayList<>();
+    public static List<ContainerEventHandler> listRootElements(Screen screen) {
+        List<ContainerEventHandler> parents = new ArrayList<>();
 
         for (var rootLister : ROOT_LISTERS) {
             rootLister.accept(screen, parents);
@@ -55,30 +55,30 @@ public class ElementUtils {
         return parents;
     }
 
-    public static int x(Element element) {
+    public static int x(GuiEventListener element) {
         return getThroughSupport(element, ElementSupport::getX);
     }
 
-    public static int y(Element element) {
+    public static int y(GuiEventListener element) {
         return getThroughSupport(element, ElementSupport::getY);
     }
 
-    public static int width(Element element) {
+    public static int width(GuiEventListener element) {
         return getThroughSupport(element, ElementSupport::getWidth);
     }
 
-    public static int height(Element element) {
+    public static int height(GuiEventListener element) {
         return getThroughSupport(element, ElementSupport::getHeight);
     }
 
-    public static boolean isVisible(Element element) {
-        if (element instanceof ClickableWidget widget)
+    public static boolean isVisible(GuiEventListener element) {
+        if (element instanceof AbstractWidget widget)
             return widget.visible;
         else
             return true;
     }
 
-    public static boolean inBoundingBox(Element e, int x, int y) {
+    public static boolean inBoundingBox(GuiEventListener e, int x, int y) {
         if (x(e) == -1) return false;
 
         return x >= x(e)
@@ -87,9 +87,9 @@ public class ElementUtils {
             && y < (y(e) + height(e));
     }
 
-    public static void collectChildren(ParentElement root, List<Element> children) {
+    public static void collectChildren(ContainerEventHandler root, List<GuiEventListener> children) {
         for (var child : root.children()) {
-            if (child instanceof ParentElement parent)
+            if (child instanceof ContainerEventHandler parent)
                 collectChildren(parent, children);
 
             children.add(child);
@@ -97,6 +97,6 @@ public class ElementUtils {
     }
 
     private interface ElementSupportGetter {
-        <T extends Element> int get(ElementSupport<T> support, T element);
+        <T extends GuiEventListener> int get(ElementSupport<T> support, T element);
     }
 }

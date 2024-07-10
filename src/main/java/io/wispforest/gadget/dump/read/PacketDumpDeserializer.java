@@ -6,16 +6,19 @@ import io.wispforest.gadget.util.ProgressToast;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.NetworkState;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.c2s.login.LoginQueryResponseC2SPacket;
-import net.minecraft.network.packet.s2c.login.LoginQueryRequestS2CPacket;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.ConnectionProtocol;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.login.ClientboundCustomQueryPacket;
+import net.minecraft.network.protocol.login.ServerboundCustomQueryAnswerPacket;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -42,9 +45,9 @@ public class PacketDumpDeserializer {
         List<DumpedPacket> list = new ArrayList<>();
 
         try (BufferedInputStream bis = new BufferedInputStream(is)) {
-            PacketByteBuf buf = PacketByteBufs.create();
+            FriendlyByteBuf buf = PacketByteBufs.create();
 
-            Int2ObjectMap<Identifier> loginQueryChannels = new Int2ObjectOpenHashMap<>();
+            Int2ObjectMap<ResourceLocation> loginQueryChannels = new Int2ObjectOpenHashMap<>();
 
             while (true) {
                 OptionalInt length = readInt(bis, true);
@@ -58,22 +61,22 @@ public class PacketDumpDeserializer {
 
                 short flags = buf.readShort();
                 boolean outbound = (flags & 1) != 0;
-                NetworkState state = switch (flags & 0b1110) {
-                    case 0b0000 -> NetworkState.HANDSHAKING;
-                    case 0b0100 -> NetworkState.STATUS;
-                    case 0b0110 -> NetworkState.LOGIN;
-                    case 0b1110 -> NetworkState.CONFIGURATION;
-                    case 0b0010 -> NetworkState.PLAY;
+                ConnectionProtocol state = switch (flags & 0b1110) {
+                    case 0b0000 -> ConnectionProtocol.HANDSHAKING;
+                    case 0b0100 -> ConnectionProtocol.STATUS;
+                    case 0b0110 -> ConnectionProtocol.LOGIN;
+                    case 0b1110 -> ConnectionProtocol.CONFIGURATION;
+                    case 0b0010 -> ConnectionProtocol.PLAY;
                     default -> throw new IllegalStateException();
                 };
                 int size = buf.readableBytes();
-                Packet<?> packet = PacketDumping.readPacket(buf, state,  outbound ? NetworkSide.SERVERBOUND : NetworkSide.CLIENTBOUND);
-                Identifier channelId = NetworkUtil.getChannelOrNull(packet);
+                Packet<?> packet = PacketDumping.readPacket(buf, state,  outbound ? PacketFlow.SERVERBOUND : PacketFlow.CLIENTBOUND);
+                ResourceLocation channelId = NetworkUtil.getChannelOrNull(packet);
 
-                if (packet instanceof LoginQueryRequestS2CPacket req) {
-                    loginQueryChannels.put(req.queryId(), req.payload().id());
-                } else if (packet instanceof LoginQueryResponseC2SPacket res) {
-                    channelId = loginQueryChannels.get(res.queryId());
+                if (packet instanceof ClientboundCustomQueryPacket req) {
+                    loginQueryChannels.put(req.transactionId(), req.payload().id());
+                } else if (packet instanceof ServerboundCustomQueryAnswerPacket res) {
+                    channelId = loginQueryChannels.get(res.transactionId());
                 }
 
                 list.add(new DumpedPacket(outbound, state, packet, channelId, NetworkUtil.unwrapCustom(packet), 0, size));
@@ -103,9 +106,9 @@ public class PacketDumpDeserializer {
     private static ReadPacketDump readV1(InputStream is) {
         List<DumpedPacket> list = new ArrayList<>();
 
-        PacketByteBuf buf = PacketByteBufs.create();
+        FriendlyByteBuf buf = PacketByteBufs.create();
 
-        Int2ObjectMap<Identifier> loginQueryChannels = new Int2ObjectOpenHashMap<>();
+        Int2ObjectMap<ResourceLocation> loginQueryChannels = new Int2ObjectOpenHashMap<>();
 
         try {
             while (true) {
@@ -121,23 +124,23 @@ public class PacketDumpDeserializer {
 
                 short flags = buf.readShort();
                 boolean outbound = (flags & 1) != 0;
-                NetworkState state = switch (flags & 0b1110) {
-                    case 0b0000 -> NetworkState.HANDSHAKING;
-                    case 0b0100 -> NetworkState.STATUS;
-                    case 0b0110 -> NetworkState.LOGIN;
-                    case 0b1110 -> NetworkState.CONFIGURATION;
-                    case 0b0010 -> NetworkState.PLAY;
+                ConnectionProtocol state = switch (flags & 0b1110) {
+                    case 0b0000 -> ConnectionProtocol.HANDSHAKING;
+                    case 0b0100 -> ConnectionProtocol.STATUS;
+                    case 0b0110 -> ConnectionProtocol.LOGIN;
+                    case 0b1110 -> ConnectionProtocol.CONFIGURATION;
+                    case 0b0010 -> ConnectionProtocol.PLAY;
                     default -> throw new IllegalStateException();
                 };
                 long sentAt = buf.readLong();
                 int size = buf.readableBytes();
-                Packet<?> packet = PacketDumping.readPacket(buf, state, outbound ? NetworkSide.SERVERBOUND : NetworkSide.CLIENTBOUND);
-                Identifier channelId = NetworkUtil.getChannelOrNull(packet);
+                Packet<?> packet = PacketDumping.readPacket(buf, state, outbound ? PacketFlow.SERVERBOUND : PacketFlow.CLIENTBOUND);
+                ResourceLocation channelId = NetworkUtil.getChannelOrNull(packet);
 
-                if (packet instanceof LoginQueryRequestS2CPacket req) {
-                    loginQueryChannels.put(req.queryId(), req.payload().id());
-                } else if (packet instanceof LoginQueryResponseC2SPacket res) {
-                    channelId = loginQueryChannels.get(res.queryId());
+                if (packet instanceof ClientboundCustomQueryPacket req) {
+                    loginQueryChannels.put(req.transactionId(), req.payload().id());
+                } else if (packet instanceof ServerboundCustomQueryAnswerPacket res) {
+                    channelId = loginQueryChannels.get(res.transactionId());
                 }
 
                 list.add(new DumpedPacket(outbound, state, packet, channelId, NetworkUtil.unwrapCustom(packet), sentAt, size));

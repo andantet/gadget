@@ -1,6 +1,6 @@
 package io.wispforest.gadget.nbt;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 public class NbtLocks {
     public static final NbtLock EMPTY = () -> "NbtLocks#EMPTY";

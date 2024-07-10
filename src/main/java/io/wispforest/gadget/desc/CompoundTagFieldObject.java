@@ -1,8 +1,8 @@
 package io.wispforest.gadget.desc;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
-public record NbtCompoundFieldObject(NbtCompound data) implements FieldObject {
+public record CompoundTagFieldObject(CompoundTag data) implements FieldObject {
     @Override
     public String type() {
         return "nbt";

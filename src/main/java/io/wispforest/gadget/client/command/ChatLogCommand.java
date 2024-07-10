@@ -7,8 +7,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.wispforest.gadget.client.log.ChatLogAppender;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.command.CommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.Component;
 import org.apache.logging.log4j.LogManager;
 
 import java.util.HashSet;
@@ -44,11 +44,11 @@ public final class ChatLogCommand {
             allLoggerNames.add(logger.getName());
         }
 
-        return CommandSource.suggestMatching(allLoggerNames, builder);
+        return SharedSuggestionProvider.suggest(allLoggerNames, builder);
     }
 
     private static CompletableFuture<Suggestions> enabledLoggerNames(CommandContext<FabricClientCommandSource> ctx, SuggestionsBuilder builder) {
-        return CommandSource.suggestMatching(ChatLogAppender.INSTANCE.allowedLoggerNames(), builder);
+        return SharedSuggestionProvider.suggest(ChatLogAppender.INSTANCE.allowedLoggerNames(), builder);
     }
 
     private static int enable(CommandContext<FabricClientCommandSource> ctx) {
@@ -56,7 +56,7 @@ public final class ChatLogCommand {
 
         ChatLogAppender.INSTANCE.allowedLoggerNames().add(loggerName);
 
-        ctx.getSource().sendFeedback(Text.translatable("commands.gadget.chat-log.enable.success", loggerName));
+        ctx.getSource().sendFeedback(Component.translatable("commands.gadget.chat-log.enable.success", loggerName));
 
         return 0;
     }
@@ -66,7 +66,7 @@ public final class ChatLogCommand {
 
         ChatLogAppender.INSTANCE.allowedLoggerNames().remove(loggerName);
 
-        ctx.getSource().sendFeedback(Text.translatable("commands.gadget.chat-log.disable.success", loggerName));
+        ctx.getSource().sendFeedback(Component.translatable("commands.gadget.chat-log.disable.success", loggerName));
 
         return 0;
     }

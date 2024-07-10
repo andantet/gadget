@@ -1,50 +1,50 @@
 package io.wispforest.gadget.dump.fake.recipe;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.world.World;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 
-public interface FakeGadgetRecipe extends Recipe<Inventory> {
+public interface FakeGadgetRecipe extends Recipe<Container> {
     @Override
-    default boolean matches(Inventory inventory, World world) {
+    default boolean matches(Container inventory, Level world) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    default ItemStack craft(Inventory inventory, DynamicRegistryManager registryManager) {
+    default ItemStack assemble(Container inventory, RegistryAccess registryManager) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    default boolean fits(int width, int height) {
+    default boolean canCraftInDimensions(int width, int height) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    default ItemStack getResult(DynamicRegistryManager registryManager) {
+    default ItemStack getResultItem(RegistryAccess registryManager) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    default DefaultedList<ItemStack> getRemainder(Inventory inventory) {
+    default NonNullList<ItemStack> getRemainingItems(Container inventory) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    default DefaultedList<Ingredient> getIngredients() {
+    default NonNullList<Ingredient> getIngredients() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    default boolean isIgnoredInRecipeBook() {
+    default boolean isSpecial() {
         throw new UnsupportedOperationException();
     }
 
@@ -59,7 +59,7 @@ public interface FakeGadgetRecipe extends Recipe<Inventory> {
     }
 
     @Override
-    default ItemStack createIcon() {
+    default ItemStack getToastSymbol() {
         throw new UnsupportedOperationException();
     }
 
@@ -72,12 +72,12 @@ public interface FakeGadgetRecipe extends Recipe<Inventory> {
     FakeSerializer<?> getSerializer();
 
     @Override
-    default boolean isEmpty() {
+    default boolean isIncomplete() {
         throw new UnsupportedOperationException();
     }
 
     interface FakeSerializer<R extends FakeGadgetRecipe> extends RecipeSerializer<R> {
-        Identifier id();
+        ResourceLocation id();
 
         @Override
         default Codec<R> codec() {

@@ -12,8 +12,8 @@ import net.fabricmc.mappingio.format.Tiny2Reader;
 import net.fabricmc.mappingio.format.Tiny2Writer;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import net.minecraft.SharedConstants;
-import net.minecraft.text.Text;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.GsonHelper;
 
 import java.io.*;
 import java.net.URL;
@@ -30,7 +30,7 @@ public class MojangMappings extends LoadingMappings {
 
             Files.createDirectories(mappingsDir);
 
-            Path mojPath = mappingsDir.resolve("mojmap-" + SharedConstants.getGameVersion().getName() + ".tiny");
+            Path mojPath = mappingsDir.resolve("mojmap-" + SharedConstants.getCurrentVersion().getName() + ".tiny");
 
             if (Files.exists(mojPath)) {
                 try (BufferedReader br = Files.newBufferedReader(mojPath)) {
@@ -43,31 +43,31 @@ public class MojangMappings extends LoadingMappings {
 
             IntermediaryLoader.loadIntermediary(toast, tree);
 
-            toast.step(Text.translatable("message.gadget.progress.downloading_minecraft_versions"));
-            JsonArray versions = JsonHelper.getArray(DownloadUtil.read(toast, VERSION_MANIFEST_ENDPOINT), "versions");
+            toast.step(Component.translatable("message.gadget.progress.downloading_minecraft_versions"));
+            JsonArray versions = GsonHelper.getAsJsonArray(DownloadUtil.read(toast, VERSION_MANIFEST_ENDPOINT), "versions");
             String chosenUrl = null;
 
             for (int i = 0; i < versions.size(); i++) {
                 JsonObject version = versions.get(i).getAsJsonObject();
 
-                if (JsonHelper.getString(version, "id").equals(SharedConstants.getGameVersion().getId()))
-                    chosenUrl = JsonHelper.getString(version, "url");
+                if (GsonHelper.getAsString(version, "id").equals(SharedConstants.getCurrentVersion().getId()))
+                    chosenUrl = GsonHelper.getAsString(version, "url");
             }
 
             if (chosenUrl == null)
-                throw new UnsupportedOperationException("Couldn't find version " + SharedConstants.getGameVersion().getId() + " on Mojang's servers!");
+                throw new UnsupportedOperationException("Couldn't find version " + SharedConstants.getCurrentVersion().getId() + " on Mojang's servers!");
 
-            toast.step(Text.translatable("message.gadget.progress.downloading_minecraft_version_manifest"));
+            toast.step(Component.translatable("message.gadget.progress.downloading_minecraft_version_manifest"));
             JsonObject manifest = DownloadUtil.read(toast, chosenUrl);
-            JsonObject downloads = JsonHelper.getObject(manifest, "downloads");
-            JsonObject clientMappings = JsonHelper.getObject(downloads, "client_mappings");
-            JsonObject serverMappings = JsonHelper.getObject(downloads, "server_mappings");
+            JsonObject downloads = GsonHelper.getAsJsonObject(manifest, "downloads");
+            JsonObject clientMappings = GsonHelper.getAsJsonObject(downloads, "client_mappings");
+            JsonObject serverMappings = GsonHelper.getAsJsonObject(downloads, "server_mappings");
             var sw = new MappingSourceNsSwitch(tree, "official");
 
-            toast.step(Text.translatable("message.gadget.progress.downloading_client_mappings"));
-            readProGuardInto(toast, JsonHelper.getString(clientMappings, "url"), sw);
-            toast.step(Text.translatable("message.gadget.progress.downloading_server_mappings"));
-            readProGuardInto(toast, JsonHelper.getString(serverMappings, "url"), sw);
+            toast.step(Component.translatable("message.gadget.progress.downloading_client_mappings"));
+            readProGuardInto(toast, GsonHelper.getAsString(clientMappings, "url"), sw);
+            toast.step(Component.translatable("message.gadget.progress.downloading_server_mappings"));
+            readProGuardInto(toast, GsonHelper.getAsString(serverMappings, "url"), sw);
 
             try (BufferedWriter bw = Files.newBufferedWriter(mojPath)) {
                 tree.accept(new Tiny2Writer(bw, false));

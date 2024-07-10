@@ -3,7 +3,7 @@ package io.wispforest.gadget.decompile;
 import io.wispforest.gadget.Gadget;
 import io.wispforest.gadget.util.ProgressToast;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -40,7 +40,7 @@ public final class QuiltflowerManager {
             return CompletableFuture.completedFuture(null);
 
         return CompletableFuture.runAsync(() -> {
-            toast.step(Text.translatable("text.gadget.progress.downloading_quiltflower"));
+            toast.step(Component.translatable("text.gadget.progress.downloading_quiltflower"));
 
             try {
                 if (!Files.isDirectory(DLC_DIRECTORY))
@@ -64,7 +64,7 @@ public final class QuiltflowerManager {
         });
     }
 
-    public static QuiltflowerHandler loadHandler(ProgressToast toast, Consumer<Text> logConsumer) {
+    public static QuiltflowerHandler loadHandler(ProgressToast toast, Consumer<Component> logConsumer) {
         var cl = CLASSLOADER == null ? null : CLASSLOADER.get();
         if (cl == null) {
             try {

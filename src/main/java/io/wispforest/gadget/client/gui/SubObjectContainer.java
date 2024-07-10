@@ -1,11 +1,10 @@
 package io.wispforest.gadget.client.gui;
 
+import com.mojang.math.Axis;
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.*;
 import io.wispforest.owo.ui.util.UISounds;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.RotationAxis;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -138,7 +137,7 @@ public class SubObjectContainer extends FlowLayout {
         protected float targetRotation = 90;
 
         public SpinnyBoiComponent() {
-            super(Text.literal(">"));
+            super(net.minecraft.network.chat.Component.literal(">"));
             this.margins(Insets.horizontal(4));
         }
 
@@ -150,13 +149,13 @@ public class SubObjectContainer extends FlowLayout {
 
         @Override
         public void draw(OwoUIDrawContext ctx, int mouseX, int mouseY, float partialTicks, float delta) {
-            ctx.getMatrices().push();
-            ctx.getMatrices().translate(this.x + this.width / 2f - 1, this.y + this.height / 2f - 1, 0);
-            ctx.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotationDegrees(this.rotation));
-            ctx.getMatrices().translate(-(this.x + this.width / 2f - 1), -(this.y + this.height / 2f - 1), 0);
+            ctx.pose().pushPose();
+            ctx.pose().translate(this.x + this.width / 2f - 1, this.y + this.height / 2f - 1, 0);
+            ctx.pose().mulPose(Axis.ZP.rotationDegrees(this.rotation));
+            ctx.pose().translate(-(this.x + this.width / 2f - 1), -(this.y + this.height / 2f - 1), 0);
 
             super.draw(ctx, mouseX, mouseY, partialTicks, delta);
-            ctx.getMatrices().pop();
+            ctx.pose().popPose();
         }
     }
 }
