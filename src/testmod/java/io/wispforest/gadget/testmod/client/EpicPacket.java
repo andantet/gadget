@@ -1,24 +1,19 @@
 package io.wispforest.gadget.testmod.client;
 
+import io.wispforest.endec.Endec;
+import io.wispforest.endec.impl.StructEndecBuilder;
 import io.wispforest.gadget.Gadget;
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.CustomPayload;
 
-public record EpicPacket(String maldenhagen) implements FabricPacket {
-    public static final PacketType<EpicPacket> TYPE = PacketType.create(Gadget.id("epic"), EpicPacket::read);
-
-    public static EpicPacket read(PacketByteBuf buf) {
-        return new EpicPacket(buf.readString());
-    }
+public record EpicPacket(String maldenhagen) implements CustomPayload {
+    public static final Id<EpicPacket> ID = new Id<>(Gadget.id("epic"));
+    public static final Endec<EpicPacket> ENDEC = StructEndecBuilder.of(
+        Endec.STRING.fieldOf("maldenhagen", EpicPacket::maldenhagen),
+        EpicPacket::new
+    );
 
     @Override
-    public void write(PacketByteBuf buf) {
-        buf.writeString(maldenhagen);
-    }
-
-    @Override
-    public PacketType<?> getType() {
-        return TYPE;
+    public Id<? extends CustomPayload> getId() {
+        return ID;
     }
 }

@@ -49,7 +49,7 @@ public class SearchGui extends FlowLayout {
 
         this
             .child(Components.texture(
-                    new Identifier("owo", "textures/gui/config_search.png"),
+                    Identifier.of("owo", "textures/gui/config_search.png"),
                     0,
                     0,
                     16,

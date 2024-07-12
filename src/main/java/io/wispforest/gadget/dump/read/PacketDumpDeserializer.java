@@ -6,13 +6,15 @@ import io.wispforest.gadget.util.ProgressToast;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.NetworkState;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.*;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.login.LoginQueryResponseC2SPacket;
 import net.minecraft.network.packet.s2c.login.LoginQueryRequestS2CPacket;
+import net.minecraft.network.state.*;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import org.apache.commons.logging.Log;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
@@ -58,16 +60,20 @@ public class PacketDumpDeserializer {
 
                 short flags = buf.readShort();
                 boolean outbound = (flags & 1) != 0;
-                NetworkState state = switch (flags & 0b1110) {
-                    case 0b0000 -> NetworkState.HANDSHAKING;
-                    case 0b0100 -> NetworkState.STATUS;
-                    case 0b0110 -> NetworkState.LOGIN;
-                    case 0b1110 -> NetworkState.CONFIGURATION;
-                    case 0b0010 -> NetworkState.PLAY;
+                NetworkPhase phase = switch (flags & 0b1110) {
+                    case 0b0000 -> NetworkPhase.HANDSHAKING;
+                    case 0b0100 -> NetworkPhase.STATUS;
+                    case 0b0110 -> NetworkPhase.LOGIN;
+                    case 0b1110 -> NetworkPhase.CONFIGURATION;
+                    case 0b0010 -> NetworkPhase.PLAY;
                     default -> throw new IllegalStateException();
                 };
                 int size = buf.readableBytes();
-                Packet<?> packet = PacketDumping.readPacket(buf, state,  outbound ? NetworkSide.SERVERBOUND : NetworkSide.CLIENTBOUND);
+
+                // todo: actually gather DRM info
+                NetworkState<?> state = createState(phase, outbound ? NetworkSide.SERVERBOUND : NetworkSide.CLIENTBOUND, DynamicRegistryManager.of(Registries.REGISTRIES));
+
+                Packet<?> packet = PacketDumping.readPacket(buf, state);
                 Identifier channelId = NetworkUtil.getChannelOrNull(packet);
 
                 if (packet instanceof LoginQueryRequestS2CPacket req) {
@@ -76,7 +82,7 @@ public class PacketDumpDeserializer {
                     channelId = loginQueryChannels.get(res.queryId());
                 }
 
-                list.add(new DumpedPacket(outbound, state, packet, channelId, NetworkUtil.unwrapCustom(packet), 0, size));
+                list.add(new DumpedPacket(outbound, phase, packet, channelId, 0, size));
             }
         } catch (IOException e) {
             return new ReadPacketDump(list, e);
@@ -121,17 +127,21 @@ public class PacketDumpDeserializer {
 
                 short flags = buf.readShort();
                 boolean outbound = (flags & 1) != 0;
-                NetworkState state = switch (flags & 0b1110) {
-                    case 0b0000 -> NetworkState.HANDSHAKING;
-                    case 0b0100 -> NetworkState.STATUS;
-                    case 0b0110 -> NetworkState.LOGIN;
-                    case 0b1110 -> NetworkState.CONFIGURATION;
-                    case 0b0010 -> NetworkState.PLAY;
+                NetworkPhase phase = switch (flags & 0b1110) {
+                    case 0b0000 -> NetworkPhase.HANDSHAKING;
+                    case 0b0100 -> NetworkPhase.STATUS;
+                    case 0b0110 -> NetworkPhase.LOGIN;
+                    case 0b1110 -> NetworkPhase.CONFIGURATION;
+                    case 0b0010 -> NetworkPhase.PLAY;
                     default -> throw new IllegalStateException();
                 };
                 long sentAt = buf.readLong();
                 int size = buf.readableBytes();
-                Packet<?> packet = PacketDumping.readPacket(buf, state, outbound ? NetworkSide.SERVERBOUND : NetworkSide.CLIENTBOUND);
+
+                // todo: actually gather DRM info
+                NetworkState<?> state = createState(phase, outbound ? NetworkSide.SERVERBOUND : NetworkSide.CLIENTBOUND, DynamicRegistryManager.of(Registries.REGISTRIES));
+
+                Packet<?> packet = PacketDumping.readPacket(buf, state);
                 Identifier channelId = NetworkUtil.getChannelOrNull(packet);
 
                 if (packet instanceof LoginQueryRequestS2CPacket req) {
@@ -140,11 +150,45 @@ public class PacketDumpDeserializer {
                     channelId = loginQueryChannels.get(res.queryId());
                 }
 
-                list.add(new DumpedPacket(outbound, state, packet, channelId, NetworkUtil.unwrapCustom(packet), sentAt, size));
+                list.add(new DumpedPacket(outbound, state.id(), packet, channelId, sentAt, size));
             }
         } catch (IOException e) {
             return new ReadPacketDump(list, e);
         }
+    }
+
+    private static NetworkState<?> createState(NetworkPhase phase, NetworkSide side, DynamicRegistryManager registries) {
+        return switch (phase) {
+            case HANDSHAKING ->
+                switch (side) {
+                    case SERVERBOUND -> HandshakeStates.C2S;
+                    case CLIENTBOUND -> throw new IllegalStateException();
+                };
+
+            case STATUS ->
+                switch (side) {
+                    case SERVERBOUND -> QueryStates.C2S;
+                    case CLIENTBOUND -> QueryStates.S2C;
+                };
+
+            case LOGIN ->
+                switch (side) {
+                    case SERVERBOUND -> LoginStates.C2S;
+                    case CLIENTBOUND -> LoginStates.S2C;
+                };
+
+            case CONFIGURATION ->
+                switch (side) {
+                    case SERVERBOUND -> ConfigurationStates.C2S;
+                    case CLIENTBOUND -> ConfigurationStates.S2C;
+                };
+
+            case PLAY ->
+                switch (side) {
+                    case SERVERBOUND -> PlayStateFactories.C2S.bind(RegistryByteBuf.makeFactory(registries));
+                    case CLIENTBOUND -> PlayStateFactories.S2C.bind(RegistryByteBuf.makeFactory(registries));
+                };
+        };
     }
 
     // I hate DataInputStream.

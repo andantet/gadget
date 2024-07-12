@@ -4,6 +4,7 @@ import io.wispforest.gadget.Gadget;
 import io.wispforest.gadget.client.dump.ClientPacketDumper;
 import io.wispforest.gadget.client.dump.DumpPrimer;
 import io.wispforest.gadget.client.gui.ContextMenuScreens;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
@@ -29,6 +30,8 @@ public abstract class MultiplayerServerEntryMixin {
 
     @Shadow public abstract void saveFile();
 
+    @Shadow protected abstract void update();
+
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void onRightClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         if (button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) return;
@@ -45,7 +48,19 @@ public abstract class MultiplayerServerEntryMixin {
                 ClientPacketDumper.start(false);
 
                 try {
-                    this.screen.getServerListPinger().add(this.server, () -> this.client.execute(this::saveFile));
+                    this.screen.getServerListPinger().add(
+                        this.server,
+                        () -> this.client.execute(this::saveFile),
+                        () -> {
+                            this.server
+                                .setStatus(
+                                    this.server.protocolVersion == SharedConstants.getGameVersion().getProtocolVersion()
+                                        ? ServerInfo.Status.SUCCESSFUL
+                                        : ServerInfo.Status.INCOMPATIBLE
+                                );
+                            this.client.execute(this::update);
+                        }
+                    );
                 } catch (UnknownHostException var2x) {
                     this.server.ping = -1L;
                     this.server.label = MultiplayerServerListWidgetAccessor.getCANNOT_RESOLVE_TEXT();

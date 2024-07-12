@@ -24,8 +24,8 @@ public class MinecraftClientMixin {
         MatrixStackLogger.startLoggingIfNeeded();
     }
 
-    @Inject(method = "disconnect(Lnet/minecraft/client/gui/screen/Screen;)V", at = @At("RETURN"))
-    private void onDisconnect(Screen screen, CallbackInfo ci) {
+    @Inject(method = "disconnect(Lnet/minecraft/client/gui/screen/Screen;Z)V", at = @At("RETURN"))
+    private void onDisconnect(Screen disconnectionScreen, boolean transferring, CallbackInfo ci) {
         if (DumpPrimer.isPrimed) {
             ClientPacketDumper.start(false);
 
@@ -35,9 +35,11 @@ public class MinecraftClientMixin {
         }
     }
 
-    @Inject(method = "render", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/client/MinecraftClient;paused:Z", shift = At.Shift.AFTER))
-    private void flushDump(boolean tick, CallbackInfo ci) {
-        if (this.paused)
-            ClientPacketDumper.flushIfNeeded();
-    }
+    // TODO: fix this.
+
+//    @Inject(method = "render", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/client/MinecraftClient;paused:Z", shift = At.Shift.AFTER))
+//    private void flushDump(boolean tick, CallbackInfo ci) {
+//        if (this.paused)
+//            ClientPacketDumper.flushIfNeeded();
+//    }
 }

@@ -12,7 +12,6 @@ import io.wispforest.gadget.client.gui.ContextMenuScreens;
 import io.wispforest.gadget.client.gui.GadgetScreen;
 import io.wispforest.gadget.client.gui.inspector.UIInspector;
 import io.wispforest.gadget.client.log.ChatLogAppender;
-import io.wispforest.gadget.client.nbt.StackNbtDataScreen;
 import io.wispforest.gadget.client.resource.ViewResourcesScreen;
 import io.wispforest.gadget.mappings.MappingsManager;
 import io.wispforest.gadget.mixin.client.HandledScreenAccessor;
@@ -137,7 +136,7 @@ public class GadgetClient implements ClientModInitializer {
                 Entity camera = client.getCameraEntity();
                 if (camera == null) camera = client.player;
 
-                HitResult hitResult = raycast(camera, client.getTickDelta());
+                HitResult hitResult = raycast(camera, client.getRenderTickCounter().getTickDelta(false));
 
                 if (hitResult == null) return;
 
@@ -205,24 +204,24 @@ public class GadgetClient implements ClientModInitializer {
         }, TitleScreen.class, GameMenuScreen.class);
 
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-            if (screen instanceof HandledScreen<?> handled)
-                ScreenKeyboardEvents.allowKeyPress(screen).register((screen1, key, scancode, modifiers) -> {
-                    if (!INSPECT_KEY.matchesKey(key, scancode)) return true;
-
-                    double mouseX = client.mouse.getX()
-                        * (double)client.getWindow().getScaledWidth() / (double)client.getWindow().getWidth();
-                    double mouseY = client.mouse.getY()
-                        * (double)client.getWindow().getScaledHeight() / (double)client.getWindow().getHeight();
-                    var slot = ((HandledScreenAccessor) handled).callGetSlotAt(mouseX, mouseY);
-
-                    if (slot == null) return true;
-                    if (slot instanceof CreativeInventoryScreen.LockableSlot) return true;
-                    if (slot.getStack().isEmpty()) return true;
-
-                    client.setScreen(new StackNbtDataScreen(handled, slot));
-
-                    return false;
-                });
+//            if (screen instanceof HandledScreen<?> handled)
+//                ScreenKeyboardEvents.allowKeyPress(screen).register((screen1, key, scancode, modifiers) -> {
+//                    if (!INSPECT_KEY.matchesKey(key, scancode)) return true;
+//
+//                    double mouseX = client.mouse.getX()
+//                        * (double)client.getWindow().getScaledWidth() / (double)client.getWindow().getWidth();
+//                    double mouseY = client.mouse.getY()
+//                        * (double)client.getWindow().getScaledHeight() / (double)client.getWindow().getHeight();
+//                    var slot = ((HandledScreenAccessor) handled).callGetSlotAt(mouseX, mouseY);
+//
+//                    if (slot == null) return true;
+//                    if (slot instanceof CreativeInventoryScreen.LockableSlot) return true;
+//                    if (slot.getStack().isEmpty()) return true;
+//
+//                    client.setScreen(new StackNbtDataScreen(handled, slot));
+//
+//                    return false;
+//                });
 
             ScreenKeyboardEvents.allowKeyPress(screen).register((screen1, key, scancode, modifiers) -> {
                 if (!Screen.hasShiftDown()) return true;
@@ -232,14 +231,6 @@ public class GadgetClient implements ClientModInitializer {
 
                 return false;
             });
-        });
-
-        ItemTooltipCallback.EVENT.register((stack, context, lines) -> {
-            if (Gadget.CONFIG.nonNullEmptyNbtTooltip()
-             && stack.getNbt() != null
-             && stack.getNbt().isEmpty()) {
-                lines.add(Text.translatable("text.gadget.nonNullEmptyNbt"));
-            }
         });
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {

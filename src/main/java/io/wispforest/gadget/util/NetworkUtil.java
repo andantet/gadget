@@ -22,44 +22,22 @@ public final class NetworkUtil {
     }
 
     public static Identifier getChannelOrNull(Packet<?> packet) {
-        if (packet instanceof CustomPayloadS2CPacket pkt)
-            return pkt.payload().id();
-        else if (packet instanceof CustomPayloadC2SPacket pkt)
-            return pkt.payload().id();
-        else if (packet instanceof LoginQueryRequestS2CPacket pkt)
-            return pkt.payload().id();
-        else
-            return null;
+        return switch (packet) {
+            case CustomPayloadS2CPacket pkt -> pkt.payload().getId().id();
+            case CustomPayloadC2SPacket pkt -> pkt.payload().getId().id();
+            case LoginQueryRequestS2CPacket pkt -> pkt.payload().id();
+            case null, default -> null;
+        };
     }
 
-    public static PacketByteBuf unwrapCustom(Packet<?> packet) {
-        if (packet instanceof CustomPayloadS2CPacket pkt) {
-            PacketByteBuf serializeBuffer = new PacketByteBuf(Unpooled.buffer());
-            pkt.payload().write(new SlicingPacketByteBuf(serializeBuffer));
-            return serializeBuffer;
-        } else if (packet instanceof CustomPayloadC2SPacket pkt) {
-            PacketByteBuf serializeBuffer = new PacketByteBuf(Unpooled.buffer());
-            pkt.payload().write(new SlicingPacketByteBuf(serializeBuffer));
-            return serializeBuffer;
-        } else if (packet instanceof LoginQueryRequestS2CPacket pkt) {
-            PacketByteBuf serializeBuffer = new PacketByteBuf(Unpooled.buffer());
-            pkt.payload().write(new SlicingPacketByteBuf(serializeBuffer));
-            return serializeBuffer;
-        } else if (packet instanceof LoginQueryResponseC2SPacket pkt && pkt.response() != null) {
-            PacketByteBuf serializeBuffer = new PacketByteBuf(Unpooled.buffer());
-            pkt.response().write(new SlicingPacketByteBuf(serializeBuffer));
-            return serializeBuffer;
-        } else {
-            return null;
-        }
-    }
-
-    public static InfallibleClosable resetIndexes(DumpedPacket packet) {
-        if (packet.wrappedBuf() == null) {
-            return () -> { };
-        } else {
-            return resetIndexes(packet.wrappedBuf());
-        }
+    public static Object unwrapCustom(Packet<?> packet) {
+        return switch (packet) {
+            case CustomPayloadS2CPacket pkt -> pkt.payload();
+            case CustomPayloadC2SPacket pkt -> pkt.payload();
+            case LoginQueryRequestS2CPacket pkt -> pkt.payload();
+            case LoginQueryResponseC2SPacket pkt when pkt.response() != null -> pkt.response();
+            case null, default -> null;
+        };
     }
 
     public static InfallibleClosable resetIndexes(ByteBuf buf) {

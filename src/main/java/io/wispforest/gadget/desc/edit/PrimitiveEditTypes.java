@@ -2,9 +2,8 @@ package io.wispforest.gadget.desc.edit;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import io.wispforest.endec.Endec;
 import io.wispforest.gadget.util.ReflectionUtil;
-import io.wispforest.owo.serialization.Endec;
-import io.wispforest.owo.serialization.endec.ReflectiveEndecBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.EntityType;
@@ -22,6 +21,8 @@ import java.util.function.Function;
 public final class PrimitiveEditTypes {
     private static final BiMap<String, PrimitiveEditType<?>> REGISTRY = HashBiMap.create();
     private static final Map<Class<?>, PrimitiveEditType<?>> CLASS_TO_TYPE = new HashMap<>();
+
+    static final Endec<PrimitiveEditType<?>> ENDEC = Endec.STRING.xmap(REGISTRY::get, REGISTRY.inverse()::get);
 
     private PrimitiveEditTypes() {
 
@@ -53,7 +54,7 @@ public final class PrimitiveEditTypes {
         registerSimple("float", Float.class, Float::parseFloat, Object::toString);
         registerSimple("double", Double.class, Double::parseDouble, Object::toString);
         registerSimple("string", String.class, x -> x, String::toString);
-        registerSimple("identifier", Identifier.class, Identifier::new, Identifier::toString);
+        registerSimple("identifier", Identifier.class, Identifier::of, Identifier::toString);
         registerSimple("uuid", UUID.class, UUID::fromString, UUID::toString);
 
         registerForRegistry(Block.class, Registries.BLOCK);
@@ -61,7 +62,5 @@ public final class PrimitiveEditTypes {
         registerForRegistry((Class<EntityType<?>>)(Class<?>) EntityType.class, Registries.ENTITY_TYPE);
         registerForRegistry((Class<BlockEntityType<?>>)(Class<?>) BlockEntityType.class, Registries.BLOCK_ENTITY_TYPE);
         registerForRegistry(StatusEffect.class, Registries.STATUS_EFFECT);
-
-        ReflectiveEndecBuilder.register(Endec.STRING.xmap(REGISTRY::get, REGISTRY.inverse()::get), PrimitiveEditType.class);
     }
 }

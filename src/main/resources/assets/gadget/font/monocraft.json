@@ -1,15 +1,12 @@
 {
     "providers": [
         {
-            "type": "space",
-            "advances": {
-                " ": 6,
-                "\u200c": 0
-            }
+            "type": "reference",
+            "id": "minecraft:include/space"
         },
         {
             "type": "ttf",
-            "file": "gadget:monocraft.otf",
+            "file": "gadget:monocraft.ttf",
             "oversample": 1,
             "size": 9,
             "shift": [0, 1]

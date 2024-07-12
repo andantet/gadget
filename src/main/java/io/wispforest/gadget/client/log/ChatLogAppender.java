@@ -95,9 +95,7 @@ public class ChatLogAppender extends AbstractAppender {
                 .callAddMessage(
                     text,
                     null,
-                    client.inGameHud.getTicks(),
-                    MESSAGE_INDICATOR,
-                    false
+                    MESSAGE_INDICATOR
                 );
         });
     }

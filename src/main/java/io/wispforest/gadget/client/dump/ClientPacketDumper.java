@@ -4,7 +4,6 @@ import io.wispforest.gadget.Gadget;
 import io.wispforest.gadget.client.gui.NotificationToast;
 import io.wispforest.gadget.dump.write.PacketDumpWriter;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
@@ -73,7 +72,7 @@ public class ClientPacketDumper {
         }
     }
 
-    public static void dump(Packet<?> packet, NetworkState state, NetworkSide side) {
+    public static void dump(Packet<?> packet, NetworkState<?> state) {
         PacketDumpWriter writer = WRITER;
 
         if (writer == null) return;
@@ -81,7 +80,7 @@ public class ClientPacketDumper {
         if (packet instanceof ChunkDataS2CPacket && Gadget.CONFIG.dropChunkData())
             return;
 
-        writer.write(packet, state, side);
+        writer.write(packet, state);
     }
 
     public static void flushIfNeeded() {
@@ -89,8 +88,8 @@ public class ClientPacketDumper {
 
         if (writer == null) return;
 
-        writer.flush();
-        LOGGER.info("Flushing packet dump");
+//        writer.flush();
+//        LOGGER.info("Flushing packet dump");
     }
 
     public static boolean isDumping() {

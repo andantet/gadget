@@ -2,7 +2,6 @@ package io.wispforest.gadget;
 
 import io.wispforest.gadget.dump.read.handler.PacketHandlers;
 import io.wispforest.gadget.mappings.MappingsManager;
-import io.wispforest.gadget.nbt.NbtLocks;
 import io.wispforest.gadget.network.GadgetNetworking;
 import io.wispforest.gadget.util.GadgetConfig;
 import net.fabricmc.api.EnvType;
@@ -19,14 +18,13 @@ public class Gadget implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("gadget");
 
     public static Identifier id(String path) {
-        return new Identifier(MODID, path);
+        return Identifier.of(MODID, path);
     }
 
     @Override
     public void onInitialize() {
         GadgetNetworking.init();
         PacketHandlers.init();
-        NbtLocks.init();
 
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER)
             MappingsManager.init();

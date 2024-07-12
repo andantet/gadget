@@ -1,6 +1,6 @@
 package io.wispforest.gadget.network;
 
-import io.wispforest.owo.network.serialization.SealedPolymorphic;
+import io.wispforest.endec.annotations.SealedPolymorphic;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 

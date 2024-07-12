@@ -55,17 +55,17 @@ public class PacketDumpWriter implements AutoCloseable {
         return path;
     }
 
-    public void write(Packet<?> packet, NetworkState state, NetworkSide side) {
+    public void write(Packet<?> packet, NetworkState<?> state) {
         if (output == null) return;
 
         PacketByteBuf buf = PacketByteBufs.create();
 
         short flags = 0;
 
-        if (side == NetworkSide.SERVERBOUND)
+        if (state.side() == NetworkSide.SERVERBOUND)
             flags |= 0b00000001;
 
-        switch (state) {
+        switch (state.id()) {
             case HANDSHAKING -> { }
             case STATUS -> flags |= 0b0100;
             case LOGIN -> flags |= 0b0110;
@@ -78,7 +78,7 @@ public class PacketDumpWriter implements AutoCloseable {
 
             buf.writeLong(System.currentTimeMillis());
 
-            PacketDumping.writePacket(buf, packet, state, side);
+            PacketDumping.writePacket(buf, packet, state);
         }
 
         synchronized (this) {

@@ -21,7 +21,7 @@ public class NamespaceResourceManagerMixin {
             try {
                 original.call(pack, type, namespace, prefix, consumer);
             } catch (Exception e) {
-                Gadget.LOGGER.error("Resource pack {} threw an error while loading all resources, which has been ignored", pack.getName());
+                Gadget.LOGGER.error("Resource pack {} threw an error while loading all resources, which has been ignored", pack.getId());
             }
         } else {
             original.call(pack, type, namespace, prefix, consumer);

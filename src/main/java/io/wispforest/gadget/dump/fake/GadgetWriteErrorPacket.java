@@ -13,7 +13,7 @@ public record GadgetWriteErrorPacket(int packetId, String exceptionText) impleme
         return new GadgetWriteErrorPacket(packetId, ThrowableUtil.throwableToString(t));
     }
 
-    public static GadgetWriteErrorPacket read(PacketByteBuf buf, NetworkState state, NetworkSide side) {
+    public static GadgetWriteErrorPacket read(PacketByteBuf buf, NetworkState<?> state) {
         return new GadgetWriteErrorPacket(buf.readVarInt(), buf.readString());
     }
 
@@ -23,7 +23,7 @@ public record GadgetWriteErrorPacket(int packetId, String exceptionText) impleme
     }
 
     @Override
-    public void writeToDump(PacketByteBuf buf, NetworkState state, NetworkSide side) {
+    public void writeToDump(PacketByteBuf buf, NetworkState<?> state) {
         buf.writeVarInt(packetId);
         buf.writeString(exceptionText);
     }

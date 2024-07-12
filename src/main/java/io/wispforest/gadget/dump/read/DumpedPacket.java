@@ -1,6 +1,7 @@
 package io.wispforest.gadget.dump.read;
 
 import io.wispforest.gadget.util.ContextData;
+import net.minecraft.network.NetworkPhase;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.Packet;
@@ -8,26 +9,24 @@ import net.minecraft.util.Identifier;
 
 public final class DumpedPacket extends ContextData<DumpedPacket> {
     private final boolean outbound;
-    private final NetworkState state;
+    private final NetworkPhase phase;
     private final Packet<?> packet;
     private final Identifier channelId;
-    private final PacketByteBuf wrappedBuf;
     private final long sentAt;
     private final int size;
 
-    public DumpedPacket(boolean outbound, NetworkState state, Packet<?> packet, Identifier channelId, PacketByteBuf wrappedBuf,
-                        long sentAt, int size) {
+    public DumpedPacket(boolean outbound, NetworkPhase phase, Packet<?> packet, Identifier channelId, long sentAt,
+                        int size) {
         this.outbound = outbound;
-        this.state = state;
+        this.phase = phase;
         this.packet = packet;
         this.channelId = channelId;
-        this.wrappedBuf = wrappedBuf;
         this.sentAt = sentAt;
         this.size = size;
     }
 
     public int color() {
-        return switch (state) {
+        return switch (phase) {
             case PLAY -> 0xFF00FF00;
             case HANDSHAKING -> 0xFF808080;
             case LOGIN -> 0xFFFF0000;
@@ -40,8 +39,8 @@ public final class DumpedPacket extends ContextData<DumpedPacket> {
         return outbound;
     }
 
-    public NetworkState state() {
-        return state;
+    public NetworkPhase phase() {
+        return phase;
     }
 
     public Packet<?> packet() {
@@ -50,10 +49,6 @@ public final class DumpedPacket extends ContextData<DumpedPacket> {
 
     public Identifier channelId() {
         return channelId;
-    }
-
-    public PacketByteBuf wrappedBuf() {
-        return wrappedBuf;
     }
 
     public long sentAt() {

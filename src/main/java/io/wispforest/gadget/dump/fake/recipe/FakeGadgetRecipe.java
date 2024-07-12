@@ -1,25 +1,25 @@
 package io.wispforest.gadget.dump.fake.recipe;
 
-import com.mojang.serialization.Codec;
-import net.minecraft.inventory.Inventory;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.RecipeType;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.recipe.input.CraftingRecipeInput;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 
-public interface FakeGadgetRecipe extends Recipe<Inventory> {
+public interface FakeGadgetRecipe extends Recipe<CraftingRecipeInput> {
     @Override
-    default boolean matches(Inventory inventory, World world) {
+    default boolean matches(CraftingRecipeInput input, World world) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    default ItemStack craft(Inventory inventory, DynamicRegistryManager registryManager) {
+    default ItemStack craft(CraftingRecipeInput input, RegistryWrapper.WrapperLookup lookup) {
         throw new UnsupportedOperationException();
     }
 
@@ -29,12 +29,12 @@ public interface FakeGadgetRecipe extends Recipe<Inventory> {
     }
 
     @Override
-    default ItemStack getResult(DynamicRegistryManager registryManager) {
+    default ItemStack getResult(RegistryWrapper.WrapperLookup registriesLookup){
         throw new UnsupportedOperationException();
     }
 
     @Override
-    default DefaultedList<ItemStack> getRemainder(Inventory inventory) {
+    default DefaultedList<ItemStack> getRemainder(CraftingRecipeInput input) {
         throw new UnsupportedOperationException();
     }
 
@@ -80,7 +80,7 @@ public interface FakeGadgetRecipe extends Recipe<Inventory> {
         Identifier id();
 
         @Override
-        default Codec<R> codec() {
+        default MapCodec<R> codec() {
             throw new UnsupportedOperationException();
         }
     }

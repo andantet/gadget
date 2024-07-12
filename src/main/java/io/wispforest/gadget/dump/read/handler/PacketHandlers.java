@@ -3,8 +3,10 @@ package io.wispforest.gadget.dump.read.handler;
 import io.wispforest.gadget.Gadget;
 import io.wispforest.gadget.dump.fake.FakeGadgetPacket;
 import io.wispforest.gadget.dump.read.UnwrappedPacketData;
+import io.wispforest.gadget.dump.read.unwrapped.CustomPayloadUnwrappedPacket;
 import io.wispforest.gadget.dump.read.unwrapped.UnprocessedUnwrappedPacket;
 import io.wispforest.gadget.dump.read.unwrapped.VanillaUnwrappedPacket;
+import io.wispforest.gadget.util.NetworkUtil;
 import io.wispforest.gadget.util.ReflectionUtil;
 import net.fabricmc.fabric.api.event.Event;
 import net.minecraft.network.PacketByteBuf;
@@ -31,10 +33,7 @@ public final class PacketHandlers {
             }
 
             if (packet.channelId() != null) {
-                PacketByteBuf buf = packet.wrappedBuf();
-                byte[] bytes = new byte[buf.readableBytes()];
-                buf.readBytes(bytes);
-                return new UnprocessedUnwrappedPacket(bytes);
+                return new CustomPayloadUnwrappedPacket(NetworkUtil.unwrapCustom(packet.packet()));
             } else {
                 return new VanillaUnwrappedPacket(packet.packet());
             }

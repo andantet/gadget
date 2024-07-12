@@ -1,6 +1,6 @@
 package io.wispforest.gadget.path;
 
-import io.wispforest.owo.network.serialization.SealedPolymorphic;
+import io.wispforest.endec.annotations.SealedPolymorphic;
 
 @SealedPolymorphic
 public sealed interface MapPathStepType permits EnumMapPathStepType, SimpleMapPathStepType {

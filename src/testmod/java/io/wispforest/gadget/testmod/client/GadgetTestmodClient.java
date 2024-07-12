@@ -1,8 +1,10 @@
 package io.wispforest.gadget.testmod.client;
 
+import io.wispforest.owo.serialization.CodecUtils;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -15,7 +17,7 @@ public class GadgetTestmodClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        Registry.register(Registries.ITEM, new Identifier("gadget-testmod", "funny"), FUNNY_ITEM);
+        Registry.register(Registries.ITEM, Identifier.of("gadget-testmod", "funny"), FUNNY_ITEM);
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(literal("gadget-testmod")
@@ -26,7 +28,8 @@ public class GadgetTestmodClient implements ClientModInitializer {
                     })));
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(EpicPacket.TYPE, (pkt, player, sender) -> {
+        PayloadTypeRegistry.playC2S().register(EpicPacket.ID, CodecUtils.toPacketCodec(EpicPacket.ENDEC));
+        ServerPlayNetworking.registerGlobalReceiver(EpicPacket.ID, (pkt, ctx) -> {
             // Do nothing.
         });
     }

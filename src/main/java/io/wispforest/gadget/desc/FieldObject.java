@@ -1,6 +1,6 @@
 package io.wispforest.gadget.desc;
 
-import io.wispforest.owo.network.serialization.SealedPolymorphic;
+import io.wispforest.endec.annotations.SealedPolymorphic;
 
 @SealedPolymorphic
 public sealed interface FieldObject permits BytesFieldObject, ComplexFieldObject, ErrorFieldObject, NbtCompoundFieldObject, PrimitiveFieldObject {

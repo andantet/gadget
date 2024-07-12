@@ -46,7 +46,7 @@ public class NotificationToast implements Toast {
 
     @Override
     public Visibility draw(DrawContext ctx, ToastManager manager, long startTime) {
-        this.adapter.render(ctx, 0, 0, client.getTickDelta());
+        this.adapter.render(ctx, 0, 0, client.getRenderTickCounter().getTickDelta(false));
 
         return startTime > 5000 ? Visibility.HIDE : Visibility.SHOW;
     }

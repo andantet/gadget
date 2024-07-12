@@ -13,12 +13,14 @@ public class REISupport {
     }
 
     public static void init() {
-        ElementUtils.registerElementSupport(WidgetWithBounds.class, ElementSupport.fromLambda(
-            w -> w.getBounds().x,
-            w -> w.getBounds().y,
-            w -> w.getBounds().width,
-            w -> w.getBounds().height
-        ));
+        // TODO: depend on shedaniel math.
+
+//        ElementUtils.registerElementSupport(WidgetWithBounds.class, ElementSupport.fromLambda(
+//            w -> w.getBounds().x,
+//            w -> w.getBounds().y,
+//            w -> w.getBounds().width,
+//            w -> w.getBounds().height
+//        ));
 
         ElementUtils.registerRootLister((screen, list) -> {
             var overlay = REIRuntime.getInstance().getOverlay();

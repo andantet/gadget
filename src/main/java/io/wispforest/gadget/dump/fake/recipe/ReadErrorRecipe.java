@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public record ReadErrorRecipe(byte[] data, Exception exception) implements FakeGadgetRecipe {
     public static RecipeEntry<ReadErrorRecipe> from(Exception exception, PacketByteBuf buf) {
         int start = buf.readerIndex();
-        Identifier recipeId = new Identifier(
+        Identifier recipeId = Identifier.of(
             "gadget-fake",
             "cringe-recipe-bruh-" + ThreadLocalRandom.current().nextInt()
         );

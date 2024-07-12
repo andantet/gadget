@@ -2,7 +2,6 @@ package io.wispforest.gadget.dump.fake;
 
 import io.wispforest.gadget.dump.read.unwrapped.UnprocessedUnwrappedPacket;
 import io.wispforest.gadget.dump.read.unwrapped.UnwrappedPacket;
-import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.PacketByteBuf;
 
@@ -22,7 +21,7 @@ public record GadgetReadErrorPacket(byte[] data, int packetId, Exception excepti
     }
 
     @Override
-    public void writeToDump(PacketByteBuf buf, NetworkState state, NetworkSide side) {
+    public void writeToDump(PacketByteBuf buf, NetworkState<?> state) {
         throw new UnsupportedOperationException();
     }
 

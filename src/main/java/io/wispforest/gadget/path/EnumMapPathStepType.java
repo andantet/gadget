@@ -1,7 +1,7 @@
 package io.wispforest.gadget.path;
 
-import io.wispforest.owo.serialization.Endec;
-import io.wispforest.owo.serialization.endec.ReflectiveEndecBuilder;
+
+import io.wispforest.endec.Endec;
 
 public record EnumMapPathStepType(Class<?> klass) implements MapPathStepType {
     public static final Endec<EnumMapPathStepType> ENDEC = Endec.STRING.xmap(
@@ -14,10 +14,6 @@ public record EnumMapPathStepType(Class<?> klass) implements MapPathStepType {
         },
         type -> type.klass.getName()
     );
-
-    public static void init() {
-        ReflectiveEndecBuilder.register(ENDEC, EnumMapPathStepType.class);
-    }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Override

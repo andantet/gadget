@@ -8,6 +8,8 @@ import io.wispforest.gadget.util.NetworkUtil;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.Recipe;
@@ -20,10 +22,11 @@ import net.minecraft.util.Identifier;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public record GadgetRecipesS2CPacket(List<RecipeEntry<?>> recipes) implements FakeGadgetPacket {
     public static final int ID = -4;
 
-    public static GadgetRecipesS2CPacket read(PacketByteBuf buf, NetworkState state, NetworkSide side) {
+    public static GadgetRecipesS2CPacket read(PacketByteBuf buf, NetworkState<?> state) {
         int size = buf.readVarInt();
         List<RecipeEntry<?>> recipes = new ArrayList<>(size);
 
@@ -31,7 +34,7 @@ public record GadgetRecipesS2CPacket(List<RecipeEntry<?>> recipes) implements Fa
             PacketByteBuf subBuf = NetworkUtil.readOfLengthIntoTmp(buf);
 
             try {
-                recipes.add(SynchronizeRecipesS2CPacket.readRecipe(subBuf));
+                recipes.add(RecipeEntry.PACKET_CODEC.decode((RegistryByteBuf) subBuf));
             } catch (Exception e) {
                 subBuf.readerIndex(0);
                 recipes.add(ReadErrorRecipe.from(e, subBuf));
@@ -53,7 +56,7 @@ public record GadgetRecipesS2CPacket(List<RecipeEntry<?>> recipes) implements Fa
 
     @SuppressWarnings("unchecked")
     @Override
-    public void writeToDump(PacketByteBuf buf, NetworkState state, NetworkSide side) {
+    public void writeToDump(PacketByteBuf buf, NetworkState<?> state) {
         buf.writeVarInt(recipes.size());
 
         for (var recipe : recipes) {
@@ -75,7 +78,7 @@ public record GadgetRecipesS2CPacket(List<RecipeEntry<?>> recipes) implements Fa
                     buf.writeIdentifier(serializerId);
                     buf.writeIdentifier(recipe.id());
 
-                    ((RecipeSerializer<Recipe<?>>) serializer).write(buf, recipe.value());
+                    ((PacketCodec<RegistryByteBuf, Recipe<?>>) serializer.packetCodec()).encode((RegistryByteBuf) buf, recipe.value());
                 } catch (Exception e) {
                     buf.writerIndex(startWriteIdx);
 
@@ -92,6 +95,6 @@ public record GadgetRecipesS2CPacket(List<RecipeEntry<?>> recipes) implements Fa
     private void writeFake(PacketByteBuf buf, RecipeEntry<? extends FakeGadgetRecipe> recipe) {
         buf.writeIdentifier(recipe.value().getSerializer().id());
         buf.writeIdentifier(recipe.id());
-        ((RecipeSerializer<FakeGadgetRecipe>) recipe.value().getSerializer()).write(buf, recipe.value());
+        ((PacketCodec<RegistryByteBuf, Recipe<?>>) recipe.value().getSerializer().packetCodec()).encode((RegistryByteBuf) buf, recipe.value());
     }
 }

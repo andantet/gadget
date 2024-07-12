@@ -9,7 +9,7 @@ import net.fabricmc.fabric.api.event.EventFactory;
 public interface SearchTextGatherer {
     Event<SearchTextGatherer> EVENT = EventFactory.createArrayBacked(SearchTextGatherer.class, callbacks -> (packet, searchText, errSink) -> {
         for (var callback : callbacks) {
-            try (var ignored = NetworkUtil.resetIndexes(packet)) {
+            try {
                 callback.gatherSearchText(packet, searchText, errSink);
             } catch (Exception e) {
                 errSink.accept(e);

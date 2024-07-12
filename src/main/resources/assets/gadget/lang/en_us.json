@@ -238,7 +238,6 @@
     "text.config.gadget.option.hiddenFields.tooltip": "Fields hidden in field inspections.",
     "text.config.gadget.option.errorCheckOwoUi": "Error Check OwO UI",
     "text.config.gadget.option.errorCheckOwoUi.tooltip": "Injects checks OwO UI methods for better error messages",
-    "text.config.gadget.option.nonNullEmptyNbtTooltip": "Show tooltip for stacks with non-null empty NBT",
 
     "text.gadget.nbt.compound": {"text": "c", "color": "#0197F6"},
     "text.gadget.nbt.compound.full": ["", {"text": "c", "color": "#0197F6"}, "ompound"],

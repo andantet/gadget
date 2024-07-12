@@ -1,11 +1,11 @@
 package io.wispforest.gadget.dump.fake;
 
 import io.wispforest.gadget.dump.read.unwrapped.UnwrappedPacket;
-import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.listener.PacketListener;
 import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.PacketType;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 public interface FakeGadgetPacket extends Packet<PacketListener> {
     int id();
 
-    void writeToDump(PacketByteBuf buf, NetworkState state, NetworkSide side);
+    void writeToDump(PacketByteBuf buf, NetworkState<?> state);
 
     default Packet<?> unwrapVanilla() {
         return this;
@@ -25,17 +25,17 @@ public interface FakeGadgetPacket extends Packet<PacketListener> {
     }
 
     @Override
-    default void write(PacketByteBuf buf) {
+    default void apply(PacketListener listener) {
         throw new IllegalStateException();
     }
 
     @Override
-    default void apply(PacketListener listener) {
+    default PacketType<? extends Packet<PacketListener>> getPacketId() {
         throw new IllegalStateException();
     }
 
     @FunctionalInterface
     interface Reader<T extends FakeGadgetPacket> {
-        T read(PacketByteBuf buf, NetworkState state, NetworkSide side);
+        T read(PacketByteBuf buf, NetworkState<?> state);
     }
 }

@@ -1,6 +1,6 @@
 package io.wispforest.gadget.mixin.owo;
 
-import io.wispforest.owo.serialization.StructEndec;
+import io.wispforest.endec.StructEndec;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 

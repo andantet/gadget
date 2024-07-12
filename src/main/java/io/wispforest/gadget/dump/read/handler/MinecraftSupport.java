@@ -14,53 +14,53 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public final class MinecraftSupport {
-    public static final Identifier REGISTER_CHANNEL = new Identifier("minecraft", "register");
-
-    public static final Identifier UNREGISTER_CHANNEL = new Identifier("minecraft", "unregister");
+//    public static final Identifier REGISTER_CHANNEL = new Identifier("minecraft", "register");
+//
+//    public static final Identifier UNREGISTER_CHANNEL = new Identifier("minecraft", "unregister");
 
     private MinecraftSupport() {
 
     }
 
     public static void init() {
-        PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            if (!Objects.equals(packet.channelId(), BrandCustomPayload.ID)) return null;
-
-            PacketByteBuf buf = packet.wrappedBuf();
-            String brand = buf.readString();
-
-            return new BrandPacket(brand);
-        });
-
-        PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            boolean unregister;
-
-            if (Objects.equals(packet.channelId(), REGISTER_CHANNEL)) {
-                unregister = false;
-            } else if (Objects.equals(packet.channelId(), UNREGISTER_CHANNEL)) {
-                unregister = true;
-            } else {
-                return null;
-            }
-
-            PacketByteBuf buf = packet.wrappedBuf();
-            StringBuilder more = new StringBuilder();
-            List<Identifier> channels = new ArrayList<>();
-
-            while (buf.isReadable()) {
-                byte next = buf.readByte();
-
-                if (next != 0) {
-                    more.append((char) next);
-                } else {
-                    channels.add(new Identifier(more.toString()));
-
-                    more = new StringBuilder();
-                }
-            }
-
-            return new RegisterPacket(unregister, channels);
-        });
+//        PacketUnwrapper.EVENT.register((packet, errSink) -> {
+//            if (!Objects.equals(packet.channelId(), BrandCustomPayload.ID)) return null;
+//
+//            PacketByteBuf buf = packet.wrappedBuf();
+//            String brand = buf.readString();
+//
+//            return new BrandPacket(brand);
+//        });
+//
+//        PacketUnwrapper.EVENT.register((packet, errSink) -> {
+//            boolean unregister;
+//
+//            if (Objects.equals(packet.channelId(), REGISTER_CHANNEL)) {
+//                unregister = false;
+//            } else if (Objects.equals(packet.channelId(), UNREGISTER_CHANNEL)) {
+//                unregister = true;
+//            } else {
+//                return null;
+//            }
+//
+//            PacketByteBuf buf = packet.wrappedBuf();
+//            StringBuilder more = new StringBuilder();
+//            List<Identifier> channels = new ArrayList<>();
+//
+//            while (buf.isReadable()) {
+//                byte next = buf.readByte();
+//
+//                if (next != 0) {
+//                    more.append((char) next);
+//                } else {
+//                    channels.add(new Identifier(more.toString()));
+//
+//                    more = new StringBuilder();
+//                }
+//            }
+//
+//            return new RegisterPacket(unregister, channels);
+//        });
     }
 
     public record BrandPacket(String brand) implements LinesUnwrappedPacket {

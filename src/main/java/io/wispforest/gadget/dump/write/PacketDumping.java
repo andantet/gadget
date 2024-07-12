@@ -1,13 +1,16 @@
 package io.wispforest.gadget.dump.write;
 
+import io.netty.buffer.ByteBuf;
 import io.wispforest.gadget.Gadget;
 import io.wispforest.gadget.dump.fake.*;
 import io.wispforest.gadget.util.SlicingPacketByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.minecraft.network.NetworkPhase;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.BundlePacket;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
@@ -23,7 +26,9 @@ public final class PacketDumping {
         register(GadgetWriteErrorPacket.ID, GadgetWriteErrorPacket::read);
         register(GadgetBundlePacket.ID, GadgetBundlePacket::read);
 //        register(GadgetReadErrorPacket.ID, GadgetReadErrorPacket::read);
-        register(GadgetRecipesS2CPacket.ID, GadgetRecipesS2CPacket::read);
+
+        // TODO: return this.
+//        register(GadgetRecipesS2CPacket.ID, (buf, state) -> GadgetRecipesS2CPacket.read(buf, state));
     }
 
     public static void register(int id, FakeGadgetPacket.Reader<?> reader) {
@@ -32,7 +37,8 @@ public final class PacketDumping {
         }
     }
 
-    public static void writePacket(PacketByteBuf buf, Packet<?> packet, NetworkState state, NetworkSide side) {
+    @SuppressWarnings("unchecked")
+    public static void writePacket(PacketByteBuf buf, Packet<?> packet, NetworkState<?> state) {
         int startWriteIdx = buf.writerIndex();
         int packetId = 0;
 
@@ -41,25 +47,19 @@ public final class PacketDumping {
                 packet = GadgetBundlePacket.wrap(bundle);
             }
 
-            if (packet instanceof SynchronizeRecipesS2CPacket recipes) {
-                packet = new GadgetRecipesS2CPacket(recipes.getRecipes());
-            }
+            // TODO: return this.
+//            if (packet instanceof SynchronizeRecipesS2CPacket recipes) {
+//                packet = new GadgetRecipesS2CPacket(recipes.getRecipes());
+//            }
 
             if (packet instanceof FakeGadgetPacket fakePacket) {
                 packetId = fakePacket.id();
                 buf.writeVarInt(packetId);
-                fakePacket.writeToDump(buf, state, side);
+                fakePacket.writeToDump(buf, state);
                 return;
             }
 
-            packetId = state.getHandler(side).getId(packet);
-
-            if (packetId == -1)
-                throw new UnsupportedOperationException(packet.getClass().getName() + " is an invalid packet in " + side + " " + state);
-
-            buf.writeVarInt(packetId);
-
-            packet.write(new SlicingPacketByteBuf(buf));
+            ((PacketCodec<ByteBuf, Object>)(Object) state.codec()).encode(buf, packet);
         } catch (Exception e) {
             buf.writerIndex(startWriteIdx);
 
@@ -67,21 +67,23 @@ public final class PacketDumping {
 
             GadgetWriteErrorPacket writeError = GadgetWriteErrorPacket.fromThrowable(packetId, e);
             buf.writeVarInt(writeError.id());
-            writeError.writeToDump(buf, state, side);
+            writeError.writeToDump(buf, state);
         }
     }
 
-    public static Packet<?> readPacket(PacketByteBuf buf, NetworkState state, NetworkSide side) {
+    public static Packet<?> readPacket(PacketByteBuf buf, NetworkState<?> state) {
         int startOfData = buf.readerIndex();
         int packetId = buf.readVarInt();
 
         try {
             FakeGadgetPacket.Reader<?> fakeReader = PACKETS.get(packetId);
             if (fakeReader != null) {
-                return fakeReader.read(buf, state, side).unwrapVanilla();
+                return fakeReader.read(buf, state).unwrapVanilla();
             }
 
-            return state.getHandler(side).createPacket(packetId, buf);
+            buf.readerIndex(startOfData);
+
+            return state.codec().decode(buf);
         } catch (Exception e) {
             buf.readerIndex(startOfData);
             return GadgetReadErrorPacket.from(buf, packetId, e);

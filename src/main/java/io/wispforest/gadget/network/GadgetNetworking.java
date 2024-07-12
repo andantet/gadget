@@ -1,7 +1,9 @@
 package io.wispforest.gadget.network;
 
+import io.wispforest.endec.impl.ReflectiveEndecBuilder;
 import io.wispforest.gadget.Gadget;
 import io.wispforest.gadget.desc.FieldObjects;
+import io.wispforest.gadget.desc.edit.PrimitiveEditType;
 import io.wispforest.gadget.desc.edit.PrimitiveEditTypes;
 import io.wispforest.gadget.network.packet.c2s.*;
 import io.wispforest.gadget.network.packet.s2c.*;
@@ -9,9 +11,11 @@ import io.wispforest.gadget.path.EnumMapPathStepType;
 import io.wispforest.gadget.path.SimpleMapPathStepType;
 import io.wispforest.gadget.util.ResourceUtil;
 import io.wispforest.owo.network.OwoNetChannel;
+import io.wispforest.owo.serialization.format.nbt.NbtEndec;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSets;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -22,15 +26,14 @@ import java.util.HashMap;
 import java.util.Set;
 
 public final class GadgetNetworking {
-    public static final OwoNetChannel CHANNEL = OwoNetChannel.createOptional(Gadget.id("data"));
+    public static final OwoNetChannel CHANNEL = OwoNetChannel.createOptional(Gadget.id("data"))
+        .addEndecs(GadgetNetworking::registerEndecs);
 
     private GadgetNetworking() {
 
     }
 
     public static void init() {
-        SimpleMapPathStepType.init();
-        EnumMapPathStepType.init();
         PrimitiveEditTypes.init();
 
         CHANNEL.registerServerbound(OpenFieldDataScreenC2SPacket.class, (packet, access) -> {
@@ -173,5 +176,13 @@ public final class GadgetNetworking {
         CHANNEL.registerClientboundDeferred(AnnounceS2CPacket.class);
         CHANNEL.registerClientboundDeferred(ResourceListS2CPacket.class);
         CHANNEL.registerClientboundDeferred(ResourceDataS2CPacket.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void registerEndecs(ReflectiveEndecBuilder builder) {
+        builder.register(EnumMapPathStepType.ENDEC, EnumMapPathStepType.class);
+        builder.register(SimpleMapPathStepType.ENDEC, SimpleMapPathStepType.class);
+        builder.register(PrimitiveEditType.ENDEC, (Class<PrimitiveEditType<?>>)(Object) PrimitiveEditType.class);
+        builder.register(NbtEndec.COMPOUND, NbtCompound.class);
     }
 }
