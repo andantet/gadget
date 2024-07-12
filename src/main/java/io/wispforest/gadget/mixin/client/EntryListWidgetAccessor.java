@@ -1,13 +1,13 @@
 package io.wispforest.gadget.mixin.client;
 
-import net.minecraft.client.gui.components.AbstractSelectionList;
-import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.widget.EntryListWidget;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(AbstractSelectionList.class)
-public interface AbstractSelectionListAccessor extends GuiEventListener {
+@Mixin(EntryListWidget.class)
+public interface EntryListWidgetAccessor extends Element {
     @Invoker
     int callGetRowTop(int index);
 

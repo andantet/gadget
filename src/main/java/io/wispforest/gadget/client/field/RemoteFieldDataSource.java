@@ -7,15 +7,15 @@ import io.wispforest.gadget.network.FieldData;
 import io.wispforest.gadget.network.GadgetNetworking;
 import io.wispforest.gadget.network.InspectionTarget;
 import io.wispforest.gadget.network.packet.c2s.FieldDataRequestC2SPacket;
-import io.wispforest.gadget.network.packet.c2s.FieldDataSetCompoundTagC2SPacket;
+import io.wispforest.gadget.network.packet.c2s.FieldDataSetNbtCompoundC2SPacket;
 import io.wispforest.gadget.network.packet.c2s.FieldDataSetPrimitiveC2SPacket;
 import io.wispforest.gadget.network.packet.s2c.FieldDataErrorS2CPacket;
 import io.wispforest.gadget.network.packet.s2c.FieldDataResponseS2CPacket;
 import io.wispforest.gadget.path.ObjectPath;
 import io.wispforest.gadget.path.PathStep;
 import io.wispforest.gadget.util.CancellationTokenSource;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.Text;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -79,10 +79,10 @@ public class RemoteFieldDataSource implements FieldDataSource, AutoCloseable {
     }
 
     @Override
-    public CompletableFuture<Void> setCompoundTagAt(ObjectPath path, CompoundTag tag) {
+    public CompletableFuture<Void> setNbtCompoundAt(ObjectPath path, NbtCompound tag) {
         cancelSource.token().throwIfCancelled();
 
-        GadgetNetworking.CHANNEL.clientHandle().send(new FieldDataSetCompoundTagC2SPacket(this.target, path, tag));
+        GadgetNetworking.CHANNEL.clientHandle().send(new FieldDataSetNbtCompoundC2SPacket(this.target, path, tag));
 
         return CompletableFuture.completedFuture(null);
     }
@@ -121,14 +121,14 @@ public class RemoteFieldDataSource implements FieldDataSource, AutoCloseable {
     }
 
     public static class RemoteErrorException extends RuntimeException {
-        private final Component message;
+        private final Text message;
 
-        public RemoteErrorException(Component message) {
+        public RemoteErrorException(Text message) {
             super(message.getString());
             this.message = message;
         }
 
-        public Component message() {
+        public Text message() {
             return message;
         }
     }

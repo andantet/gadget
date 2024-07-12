@@ -1,9 +1,9 @@
 package io.wispforest.gadget.client.log;
 
-import io.wispforest.gadget.mixin.client.ChatComponentAccessor;
-import net.minecraft.client.GuiMessageTag;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
+import io.wispforest.gadget.mixin.client.ChatHudAccessor;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.hud.MessageIndicator;
+import net.minecraft.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
@@ -19,10 +19,10 @@ import java.util.Set;
 
 public class ChatLogAppender extends AbstractAppender {
     public static final ChatLogAppender INSTANCE = new ChatLogAppender();
-    public static final GuiMessageTag MESSAGE_TAG = new GuiMessageTag(
+    public static final MessageIndicator MESSAGE_INDICATOR = new MessageIndicator(
         0x0096FF,
         null,
-        Component.translatable("chat.tag.gadget.loud_logging"),
+        Text.translatable("chat.tag.gadget.loud_logging"),
         "Why are you seeing this?"
     );
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ROOT);
@@ -65,16 +65,16 @@ public class ChatLogAppender extends AbstractAppender {
         return String.join(".", split);
     }
 
-    private Component fromLogEvent(LogEvent event) {
+    private Text fromLogEvent(LogEvent event) {
         var formatDate = TIME_FORMATTER.format(
             Instant.ofEpochMilli(event.getInstant().getEpochMillisecond())
                 .atZone(ZoneId.systemDefault())
         );
 
-        return Component.translatable(
+        return Text.translatable(
             "text.gadget.log_entry",
             formatDate,
-            Component.translatable("text.gadget.log_level." + event.getLevel().getStandardLevel().name().toLowerCase(Locale.ROOT)),
+            Text.translatable("text.gadget.log_level." + event.getLevel().getStandardLevel().name().toLowerCase(Locale.ROOT)),
             shortenLoggerName(event.getLoggerName()),
             event.getMessage().getFormattedMessage()
         );
@@ -86,17 +86,17 @@ public class ChatLogAppender extends AbstractAppender {
             return;
 
         var text = fromLogEvent(event);
-        var client = Minecraft.getInstance();
+        var client = MinecraftClient.getInstance();
 
         client.execute(() -> {
             if (client.player == null) return;
 
-            ((ChatComponentAccessor) client.gui.getChat())
+            ((ChatHudAccessor) client.inGameHud.getChatHud())
                 .callAddMessage(
                     text,
                     null,
-                    client.gui.getGuiTicks(),
-                    MESSAGE_TAG,
+                    client.inGameHud.getTicks(),
+                    MESSAGE_INDICATOR,
                     false
                 );
         });

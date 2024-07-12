@@ -5,33 +5,33 @@ import io.wispforest.gadget.dump.fake.recipe.FakeGadgetRecipe;
 import io.wispforest.gadget.dump.fake.recipe.ReadErrorRecipe;
 import io.wispforest.gadget.dump.fake.recipe.WriteErrorRecipe;
 import io.wispforest.gadget.util.NetworkUtil;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.ConnectionProtocol;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketFlow;
-import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.network.NetworkSide;
+import net.minecraft.network.NetworkState;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
+import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public record GadgetRecipesS2CPacket(List<RecipeHolder<?>> recipes) implements FakeGadgetPacket {
+public record GadgetRecipesS2CPacket(List<RecipeEntry<?>> recipes) implements FakeGadgetPacket {
     public static final int ID = -4;
 
-    public static GadgetRecipesS2CPacket read(FriendlyByteBuf buf, ConnectionProtocol state, PacketFlow side) {
+    public static GadgetRecipesS2CPacket read(PacketByteBuf buf, NetworkState state, NetworkSide side) {
         int size = buf.readVarInt();
-        List<RecipeHolder<?>> recipes = new ArrayList<>(size);
+        List<RecipeEntry<?>> recipes = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
-            FriendlyByteBuf subBuf = NetworkUtil.readOfLengthIntoTmp(buf);
+            PacketByteBuf subBuf = NetworkUtil.readOfLengthIntoTmp(buf);
 
             try {
-                recipes.add(ClientboundUpdateRecipesPacket.fromNetwork(subBuf));
+                recipes.add(SynchronizeRecipesS2CPacket.readRecipe(subBuf));
             } catch (Exception e) {
                 subBuf.readerIndex(0);
                 recipes.add(ReadErrorRecipe.from(e, subBuf));
@@ -48,12 +48,12 @@ public record GadgetRecipesS2CPacket(List<RecipeHolder<?>> recipes) implements F
 
     @Override
     public Packet<?> unwrapVanilla() {
-        return new ClientboundUpdateRecipesPacket(recipes);
+        return new SynchronizeRecipesS2CPacket(recipes);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public void writeToDump(FriendlyByteBuf buf, ConnectionProtocol state, PacketFlow side) {
+    public void writeToDump(PacketByteBuf buf, NetworkState state, NetworkSide side) {
         buf.writeVarInt(recipes.size());
 
         for (var recipe : recipes) {
@@ -62,36 +62,36 @@ public record GadgetRecipesS2CPacket(List<RecipeHolder<?>> recipes) implements F
 
                 try {
                     if (recipe.value() instanceof FakeGadgetRecipe fakeRecipe) {
-                        writeFake(buf, new RecipeHolder<>(recipe.id(), fakeRecipe));
+                        writeFake(buf, new RecipeEntry<>(recipe.id(), fakeRecipe));
                         return;
                     }
 
                     RecipeSerializer<?> serializer = recipe.value().getSerializer();
-                    ResourceLocation serializerId = BuiltInRegistries.RECIPE_SERIALIZER.getResourceKey(serializer).map(ResourceKey::location).orElse(null);
+                    Identifier serializerId = Registries.RECIPE_SERIALIZER.getKey(serializer).map(RegistryKey::getValue).orElse(null);
 
                     if (serializerId == null)
                         throw new UnsupportedOperationException(serializer + " is not a registered serializer!");
 
-                    buf.writeResourceLocation(serializerId);
-                    buf.writeResourceLocation(recipe.id());
+                    buf.writeIdentifier(serializerId);
+                    buf.writeIdentifier(recipe.id());
 
-                    ((RecipeSerializer<Recipe<?>>) serializer).toNetwork(buf, recipe.value());
+                    ((RecipeSerializer<Recipe<?>>) serializer).write(buf, recipe.value());
                 } catch (Exception e) {
                     buf.writerIndex(startWriteIdx);
 
                     Gadget.LOGGER.error("Error while writing recipe {}", recipe, e);
 
                     WriteErrorRecipe writeError = WriteErrorRecipe.from(e);
-                    writeFake(buf, new RecipeHolder<>(recipe.id(), writeError));
+                    writeFake(buf, new RecipeEntry<>(recipe.id(), writeError));
                 }
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void writeFake(FriendlyByteBuf buf, RecipeHolder<? extends FakeGadgetRecipe> recipe) {
-        buf.writeResourceLocation(recipe.value().getSerializer().id());
-        buf.writeResourceLocation(recipe.id());
-        ((RecipeSerializer<FakeGadgetRecipe>) recipe.value().getSerializer()).toNetwork(buf, recipe.value());
+    private void writeFake(PacketByteBuf buf, RecipeEntry<? extends FakeGadgetRecipe> recipe) {
+        buf.writeIdentifier(recipe.value().getSerializer().id());
+        buf.writeIdentifier(recipe.id());
+        ((RecipeSerializer<FakeGadgetRecipe>) recipe.value().getSerializer()).write(buf, recipe.value());
     }
 }

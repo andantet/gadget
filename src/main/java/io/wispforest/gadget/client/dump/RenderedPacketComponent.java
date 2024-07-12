@@ -17,8 +17,9 @@ import io.wispforest.owo.ui.container.CollapsibleContainer;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.*;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.lang.ref.SoftReference;
@@ -49,18 +50,18 @@ public class RenderedPacketComponent {
                 .surface(Surface.outline(packet.color()))
                 .margins(Insets.bottom(5));
 
-            MutableComponent typeText = net.minecraft.network.chat.Component.literal("");
+            MutableText typeText = Text.literal("");
 
             if (packet.packet() instanceof GadgetReadErrorPacket errorPacket) {
-                typeText.append(net.minecraft.network.chat.Component.translatable("text.gadget.packet_read_error", errorPacket.packetId()));
+                typeText.append(Text.translatable("text.gadget.packet_read_error", errorPacket.packetId()));
             } else if (packet.packet() instanceof GadgetWriteErrorPacket errorPacket) {
-                typeText.append(net.minecraft.network.chat.Component.translatable("text.gadget.packet_write_error", errorPacket.packetId()));
+                typeText.append(Text.translatable("text.gadget.packet_write_error", errorPacket.packetId()));
             } else {
                 typeText.append(ReflectionUtil.nameWithoutPackage(packet.packet().getClass()));
 
                 if (packet.channelId() != null)
-                    typeText.append(net.minecraft.network.chat.Component.literal(" " + packet.channelId())
-                        .withStyle(ChatFormatting.GRAY));
+                    typeText.append(Text.literal(" " + packet.channelId())
+                        .formatted(Formatting.GRAY));
             }
 
             var readerCtx = packet.get(DumpReaderContext.KEY);
@@ -68,8 +69,8 @@ public class RenderedPacketComponent {
             if (readerCtx != null) {
                 typeText.append(" ");
 
-                typeText.append(net.minecraft.network.chat.Component.literal(DurationFormatUtils.formatDuration(packet.sentAt() - readerCtx.reader().startTime(), "mm:ss.SSS"))
-                    .withStyle(ChatFormatting.DARK_GRAY));
+                typeText.append(Text.literal(DurationFormatUtils.formatDuration(packet.sentAt() - readerCtx.reader().startTime(), "mm:ss.SSS"))
+                    .formatted(Formatting.DARK_GRAY));
             }
 
             var container = new SubObjectContainer(unused -> {}, unused -> {});
@@ -95,7 +96,7 @@ public class RenderedPacketComponent {
                 CollapsibleContainer errors = Containers.collapsible(
                     Sizing.content(),
                     Sizing.content(),
-                    net.minecraft.network.chat.Component.translatable("text.gadget.packet_errors"),
+                    Text.translatable("text.gadget.packet_errors"),
                     false
                 );
 

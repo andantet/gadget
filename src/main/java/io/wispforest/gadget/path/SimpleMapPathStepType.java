@@ -6,12 +6,12 @@ import io.wispforest.gadget.util.PrettyPrinters;
 import io.wispforest.gadget.util.ReflectionUtil;
 import io.wispforest.owo.serialization.Endec;
 import io.wispforest.owo.serialization.endec.ReflectiveEndecBuilder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.block.Block;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +30,7 @@ public record SimpleMapPathStepType(Function<String, Object> fromImpl, Function<
     }
 
     private static <T> void registerForRegistry(Class<T> klass, Registry<T> registry) {
-        register(registry.key().location().toString(), klass, x -> registry.get(new ResourceLocation(x)), x -> registry.getKey(x).toString());
+        register(registry.getKey().getValue().toString(), klass, x -> registry.get(new Identifier(x)), x -> registry.getId(x).toString());
     }
 
     public static SimpleMapPathStepType getFor(Class<?> klass) {
@@ -42,11 +42,11 @@ public record SimpleMapPathStepType(Function<String, Object> fromImpl, Function<
     static {
         register("int", Integer.class, Integer::parseInt, Object::toString);
         register("string", String.class, x -> x, String::toString);
-        register("identifier", ResourceLocation.class, ResourceLocation::new, ResourceLocation::toString);
+        register("identifier", Identifier.class, Identifier::new, Identifier::toString);
 
-        registerForRegistry(Block.class, BuiltInRegistries.BLOCK);
-        registerForRegistry(Item.class, BuiltInRegistries.ITEM);
-        registerForRegistry(MobEffect.class, BuiltInRegistries.MOB_EFFECT);
+        registerForRegistry(Block.class, Registries.BLOCK);
+        registerForRegistry(Item.class, Registries.ITEM);
+        registerForRegistry(StatusEffect.class, Registries.STATUS_EFFECT);
 
         ReflectiveEndecBuilder.register(Endec.STRING.xmap(REGISTRY::get, REGISTRY.inverse()::get), SimpleMapPathStepType.class);
     }

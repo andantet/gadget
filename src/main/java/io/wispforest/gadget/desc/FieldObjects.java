@@ -10,9 +10,9 @@ import io.wispforest.gadget.util.PrettyPrinters;
 import io.wispforest.gadget.util.ReflectionUtil;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.Fields;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.spongepowered.asm.mixin.transformer.meta.MixinMerged;
 
@@ -137,8 +137,8 @@ public final class FieldObjects {
 
 
     public static FieldObject fromObject(Object o, Set<Object> pathObjs) {
-        if (o instanceof CompoundTag compound) {
-            return new CompoundTagFieldObject(compound);
+        if (o instanceof NbtCompound compound) {
+            return new NbtCompoundFieldObject(compound);
         } else if (o instanceof byte[] bytes) {
             return new BytesFieldObject(MappingsManager.unmapClass(o.getClass()), bytes);
         } else if (o instanceof ByteBuffer byteBuffer) {
@@ -169,7 +169,7 @@ public final class FieldObjects {
         String tag;
 
         if (o instanceof ItemStack stack) {
-            tag = "{" + stack.getCount() + " " + BuiltInRegistries.ITEM.getKey(stack.getItem()) + "}";
+            tag = "{" + stack.getCount() + " " + Registries.ITEM.getId(stack.getItem()) + "}";
         } else if (o.getClass().isEnum()) {
             tag = "#" + ((Enum<?>) o).name();
         } else {

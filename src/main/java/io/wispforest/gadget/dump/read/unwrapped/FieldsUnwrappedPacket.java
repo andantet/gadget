@@ -10,9 +10,9 @@ import io.wispforest.owo.ui.component.Components;
 import io.wispforest.owo.ui.container.FlowLayout;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.OptionalInt;
@@ -30,12 +30,12 @@ public interface FieldsUnwrappedPacket extends UnwrappedPacket {
         return OptionalInt.empty();
     }
 
-    default @Nullable Component headText() {
-        MutableComponent headText = Component.literal(ReflectionUtil.nameWithoutPackage(rawFieldsObject().getClass()));
+    default @Nullable Text headText() {
+        MutableText headText = Text.literal(ReflectionUtil.nameWithoutPackage(rawFieldsObject().getClass()));
 
         if (packetId().isPresent()) {
-            headText.append(Component.literal(" #" + packetId().getAsInt())
-                .withStyle(ChatFormatting.GRAY));
+            headText.append(Text.literal(" #" + packetId().getAsInt())
+                .formatted(Formatting.GRAY));
         }
 
         return headText;
@@ -43,7 +43,7 @@ public interface FieldsUnwrappedPacket extends UnwrappedPacket {
 
     @Override
     default void gatherSearchText(StringBuilder out, ErrorSink errSink) {
-        Component headText = headText();
+        Text headText = headText();
 
         if (headText != null)
             out.append(" ").append(headText.getString());
@@ -51,7 +51,7 @@ public interface FieldsUnwrappedPacket extends UnwrappedPacket {
 
     @Override
     default void dumpAsPlainText(FormattedDumper out, int indent, ErrorSink errSink) {
-        Component headText = headText();
+        Text headText = headText();
 
         if (headText != null)
             out.write(indent, headText.getString());
@@ -72,7 +72,7 @@ public interface FieldsUnwrappedPacket extends UnwrappedPacket {
     @Environment(EnvType.CLIENT)
     @Override
     default void render(FlowLayout out, ErrorSink errSink) {
-        Component headText = headText();
+        Text headText = headText();
 
         if (headText != null)
             out.child(Components.label(headText));

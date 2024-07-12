@@ -6,7 +6,7 @@ import io.wispforest.owo.ui.component.Components;
 import io.wispforest.owo.ui.container.FlowLayout;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 
 /**
  * Represents a deserialized custom packet.
@@ -31,6 +31,6 @@ public interface UnwrappedPacket {
 
     @Environment(EnvType.CLIENT)
     default void render(FlowLayout out, ErrorSink errSink) {
-        out.child(Components.label(Component.translatable("text.gadget.deserialized_packet_no_render", getClass().getName())));
+        out.child(Components.label(Text.translatable("text.gadget.deserialized_packet_no_render", getClass().getName())));
     }
 }

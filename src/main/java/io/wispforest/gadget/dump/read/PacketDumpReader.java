@@ -6,7 +6,7 @@ import io.wispforest.gadget.dump.fake.GadgetReadErrorPacket;
 import io.wispforest.gadget.dump.fake.GadgetWriteErrorPacket;
 import io.wispforest.gadget.dump.read.handler.PlainTextPacketDumper;
 import io.wispforest.gadget.util.*;
-import net.minecraft.client.resources.language.I18n;
+import net.minecraft.client.resource.language.I18n;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.io.IOException;
@@ -90,9 +90,9 @@ public class PacketDumpReader {
         StringBuilder sb = new StringBuilder();
 
         if (packet.packet() instanceof GadgetReadErrorPacket errorPacket) {
-            sb.append(I18n.get("text.gadget.packet_read_error", errorPacket.packetId()));
+            sb.append(I18n.translate("text.gadget.packet_read_error", errorPacket.packetId()));
         } else if (packet.packet() instanceof GadgetWriteErrorPacket errorPacket) {
-            sb.append(I18n.get("text.gadget.packet_write_error", errorPacket.packetId()));
+            sb.append(I18n.translate("text.gadget.packet_write_error", errorPacket.packetId()));
         } else {
             sb.append(ReflectionUtil.nameWithoutPackage(packet.packet().getClass()));
 

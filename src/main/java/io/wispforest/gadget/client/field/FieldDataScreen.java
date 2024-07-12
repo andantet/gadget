@@ -22,9 +22,9 @@ import io.wispforest.owo.ui.container.OverlayContainer;
 import io.wispforest.owo.ui.container.ScrollContainer;
 import io.wispforest.owo.ui.core.*;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -52,7 +52,7 @@ public class FieldDataScreen extends BaseOwoScreen<FlowLayout> {
         if (!isClient)
             dataSource = new RemoteFieldDataSource(target, rootData, initialFields);
         else
-            dataSource = new LocalFieldDataSource(target.resolve(Minecraft.getInstance().level), isMutable);
+            dataSource = new LocalFieldDataSource(target.resolve(MinecraftClient.getInstance().world), isMutable);
 
         this.island = new FieldDataIsland(
             dataSource,
@@ -97,15 +97,15 @@ public class FieldDataScreen extends BaseOwoScreen<FlowLayout> {
         SidebarBuilder sidebar = new SidebarBuilder();
 
         sidebar.button(
-            Component.translatable("text.gadget." + (isClient() ? "client" : "server") + "_view.icon"),
-            Component.translatable("text.gadget." + (isClient() ? "client" : "server") + "_view" + (GadgetNetworking.CHANNEL.canSendToServer() ? "" : ".no_switch") + ".tooltip"),
+            Text.translatable("text.gadget." + (isClient() ? "client" : "server") + "_view.icon"),
+            Text.translatable("text.gadget." + (isClient() ? "client" : "server") + "_view" + (GadgetNetworking.CHANNEL.canSendToServer() ? "" : ".no_switch") + ".tooltip"),
             (mouseX, mouseY) -> {
                 if (!GadgetNetworking.CHANNEL.canSendToServer()) return;
 
                 if (isClient())
                     GadgetNetworking.CHANNEL.clientHandle().send(new OpenFieldDataScreenC2SPacket(target));
                 else
-                    minecraft.setScreen(new FieldDataScreen(
+                    client.setScreen(new FieldDataScreen(
                         target,
                         true,
                         true, null,
@@ -125,7 +125,7 @@ public class FieldDataScreen extends BaseOwoScreen<FlowLayout> {
 
             uiAdapter.rootComponent.focusHandler().focus(
                 search.searchBox(),
-                io.wispforest.owo.ui.core.Component.FocusSource.MOUSE_CLICK
+                Component.FocusSource.MOUSE_CLICK
             );
 
             return true;
@@ -142,24 +142,24 @@ public class FieldDataScreen extends BaseOwoScreen<FlowLayout> {
             .surface(Surface.DARK_PANEL)
             .padding(Insets.of(8));
 
-        exportModal.child(Components.label(Component.translatable("text.gadget.export.packet_dump"))
+        exportModal.child(Components.label(Text.translatable("text.gadget.export.packet_dump"))
             .margins(Insets.bottom(4)));
 
         SaveFilePathComponent savePath =
             new SaveFilePathComponent(
-                I18n.get("text.gadget.export.packet_dump"),
+                I18n.translate("text.gadget.export.packet_dump"),
                 FabricLoader.getInstance().getGameDir().toString() + "/"
             )
             .patterns(List.of("*.txt", "*.json"))
             .filterDescription("Plain text/JSON file");
 
         exportModal.child(Containers.horizontalFlow(Sizing.content(), Sizing.content())
-            .child(Components.label(Component.translatable("text.gadget.export.output_path")))
+            .child(Components.label(Text.translatable("text.gadget.export.output_path")))
             .child(savePath)
             .verticalAlignment(VerticalAlignment.CENTER)
         );
 
-        var button = Components.button(Component.translatable("text.gadget.export.export_button"), b -> {
+        var button = Components.button(Text.translatable("text.gadget.export.export_button"), b -> {
             var path = Path.of(savePath.path().get());
 
             exportOverlay.remove();
@@ -191,14 +191,14 @@ public class FieldDataScreen extends BaseOwoScreen<FlowLayout> {
         BufferedWriter bw = Files.newBufferedWriter(path);
         JsonWriter writer = new JsonWriter(bw);
 
-        var toast = ProgressToast.create(Component.translatable("text.gadget.exporting_field_dump"));
+        var toast = ProgressToast.create(Text.translatable("text.gadget.exporting_field_dump"));
 
         CompletableFuture<Void> future =
             island.dumpToJson(
                     writer,
                     island.root(),
                     5,
-                    f -> toast.step(Component.translatable("text.gadget.exporting.dumping_path", f.toString()))
+                    f -> toast.step(Text.translatable("text.gadget.exporting.dumping_path", f.toString()))
                 )
                 .whenComplete((ignored1, ignored2) -> {
                     try {

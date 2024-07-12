@@ -14,10 +14,10 @@ import io.wispforest.owo.ui.core.Insets;
 import io.wispforest.owo.ui.core.ParentComponent;
 import io.wispforest.owo.ui.core.Sizing;
 import io.wispforest.owo.ui.core.Surface;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
@@ -36,9 +36,9 @@ public class SearchGui extends FlowLayout {
         var searchRow = Containers.horizontalFlow(Sizing.content(), Sizing.content());
 
         searchBox = Components.textBox(Sizing.fill(50));
-        searchBox.setBordered(false);
+        searchBox.setDrawsBackground(false);
         searchBox.verticalSizing(Sizing.fixed(9));
-        LabelComponent matchIndicator = Components.label(Component.empty());
+        LabelComponent matchIndicator = Components.label(Text.empty());
         matchIndicator.margins(Insets.horizontal(5));
 
         searchRow
@@ -49,7 +49,7 @@ public class SearchGui extends FlowLayout {
 
         this
             .child(Components.texture(
-                    new ResourceLocation("owo", "textures/gui/config_search.png"),
+                    new Identifier("owo", "textures/gui/config_search.png"),
                     0,
                     0,
                     16,
@@ -59,19 +59,19 @@ public class SearchGui extends FlowLayout {
                 .margins(Insets.of(2)))
             .child(searchRow);
 
-        var searchHint = I18n.get("text.owo.config.search");
+        var searchHint = I18n.translate("text.owo.config.search");
         searchBox.setSuggestion(searchHint);
         searchBox.onChanged().subscribe(s -> {
             searchBox.setSuggestion(s.isEmpty() ? searchHint : "");
 
-            searchBox.setTextColor(EditBox.DEFAULT_TEXT_COLOR);
-            matchIndicator.text(Component.empty());
+            searchBox.setEditableColor(TextFieldWidget.DEFAULT_EDITABLE_COLOR);
+            matchIndicator.text(Text.empty());
         });
 
         searchBox.keyPress().subscribe((keyCode, scanCode, modifiers) -> {
             if (keyCode != GLFW.GLFW_KEY_ENTER) return false;
 
-            var query = searchBox.getValue().toLowerCase(Locale.ROOT);
+            var query = searchBox.getText().toLowerCase(Locale.ROOT);
             if (query.isBlank()) return false;
 
             if (this.currentMatches != null && this.currentMatches.query().equals(query)) {
@@ -91,11 +91,11 @@ public class SearchGui extends FlowLayout {
             }
 
             if (this.currentMatches.matches().isEmpty()) {
-                matchIndicator.text(Component.translatable("text.owo.config.search.no_matches"));
-                searchBox.setTextColor(0xEB1D36);
+                matchIndicator.text(Text.translatable("text.owo.config.search.no_matches"));
+                searchBox.setEditableColor(0xEB1D36);
             } else {
-                matchIndicator.text(Component.translatable("text.owo.config.search.matches", this.currentMatchIndex + 1, this.currentMatches.matches().size()));
-                searchBox.setTextColor(0x28FFBF);
+                matchIndicator.text(Text.translatable("text.owo.config.search.matches", this.currentMatchIndex + 1, this.currentMatches.matches().size()));
+                searchBox.setEditableColor(0x28FFBF);
 
                 var selectedMatch = this.currentMatches.matches().get(this.currentMatchIndex);
                 var anchorFrame = selectedMatch.anchorFrame();

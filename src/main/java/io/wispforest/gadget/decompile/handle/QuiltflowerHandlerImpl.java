@@ -11,7 +11,7 @@ import io.wispforest.gadget.util.ProgressToast;
 import net.fabricmc.mappingio.adapter.MappingNsRenamer;
 import net.fabricmc.mappingio.tree.MappingTree;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 import org.jetbrains.java.decompiler.main.Fernflower;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -30,9 +30,9 @@ public class QuiltflowerHandlerImpl implements io.wispforest.gadget.decompile.Qu
     private final Map<String, byte[]> unmappedClassBytecodeStash = new HashMap<>();
     private final Map<String, byte[]> classBytecodeStash = new HashMap<>();
     private final List<String> allUnmappedClasses;
-    final Consumer<Component> logConsumer;
+    final Consumer<Text> logConsumer;
 
-    public QuiltflowerHandlerImpl(ProgressToast toast, Consumer<Component> logConsumer) {
+    public QuiltflowerHandlerImpl(ProgressToast toast, Consumer<Text> logConsumer) {
         this.logConsumer = logConsumer;
 
         allUnmappedClasses = new ArrayList<>();
@@ -44,7 +44,7 @@ public class QuiltflowerHandlerImpl implements io.wispforest.gadget.decompile.Qu
             allUnmappedClasses.add(klass.getName().replace('.', '/'));
         }
 
-        toast.step(Component.translatable("message.gadget.progress.loading_mappings"));
+        toast.step(Text.translatable("message.gadget.progress.loading_mappings"));
         mappings = new MemoryMappingTree(true);
 
         try {

@@ -5,14 +5,14 @@ import com.google.common.collect.HashBiMap;
 import io.wispforest.gadget.util.ReflectionUtil;
 import io.wispforest.owo.serialization.Endec;
 import io.wispforest.owo.serialization.endec.ReflectiveEndecBuilder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.block.Block;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +37,7 @@ public final class PrimitiveEditTypes {
     }
 
     public static <T> void registerForRegistry(Class<T> klass, Registry<T> registry) {
-        register(registry.key().location().toString(), klass, new RegistryEditType<>(registry));
+        register(registry.getKey().getValue().toString(), klass, new RegistryEditType<>(registry));
     }
 
     @SuppressWarnings("unchecked")
@@ -53,14 +53,14 @@ public final class PrimitiveEditTypes {
         registerSimple("float", Float.class, Float::parseFloat, Object::toString);
         registerSimple("double", Double.class, Double::parseDouble, Object::toString);
         registerSimple("string", String.class, x -> x, String::toString);
-        registerSimple("identifier", ResourceLocation.class, ResourceLocation::new, ResourceLocation::toString);
+        registerSimple("identifier", Identifier.class, Identifier::new, Identifier::toString);
         registerSimple("uuid", UUID.class, UUID::fromString, UUID::toString);
 
-        registerForRegistry(Block.class, BuiltInRegistries.BLOCK);
-        registerForRegistry(Item.class, BuiltInRegistries.ITEM);
-        registerForRegistry((Class<EntityType<?>>)(Class<?>) EntityType.class, BuiltInRegistries.ENTITY_TYPE);
-        registerForRegistry((Class<BlockEntityType<?>>)(Class<?>) BlockEntityType.class, BuiltInRegistries.BLOCK_ENTITY_TYPE);
-        registerForRegistry(MobEffect.class, BuiltInRegistries.MOB_EFFECT);
+        registerForRegistry(Block.class, Registries.BLOCK);
+        registerForRegistry(Item.class, Registries.ITEM);
+        registerForRegistry((Class<EntityType<?>>)(Class<?>) EntityType.class, Registries.ENTITY_TYPE);
+        registerForRegistry((Class<BlockEntityType<?>>)(Class<?>) BlockEntityType.class, Registries.BLOCK_ENTITY_TYPE);
+        registerForRegistry(StatusEffect.class, Registries.STATUS_EFFECT);
 
         ReflectiveEndecBuilder.register(Endec.STRING.xmap(REGISTRY::get, REGISTRY.inverse()::get), PrimitiveEditType.class);
     }

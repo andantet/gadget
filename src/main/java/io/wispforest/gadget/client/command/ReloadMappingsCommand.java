@@ -5,7 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import io.wispforest.gadget.mappings.MappingsManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 import org.spongepowered.include.com.google.common.io.MoreFiles;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public final class ReloadMappingsCommand {
 
         MappingsManager.reloadMappings();
 
-        ctx.getSource().sendFeedback(Component.translatable("commands.gadget.reload_mappings.success"));
+        ctx.getSource().sendFeedback(Text.translatable("commands.gadget.reload_mappings.success"));
 
         return 1;
     }

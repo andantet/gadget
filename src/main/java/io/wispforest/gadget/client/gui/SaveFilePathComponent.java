@@ -9,7 +9,7 @@ import io.wispforest.owo.ui.core.Insets;
 import io.wispforest.owo.ui.core.Sizing;
 import io.wispforest.owo.ui.core.Surface;
 import io.wispforest.owo.util.Observable;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class SaveFilePathComponent extends FlowLayout {
         this.title = title;
         this.path = Observable.of(defaultPath);
 
-        this.label = Components.label(Component.literal("breh"));
+        this.label = Components.label(Text.literal("breh"));
 
         this.configureLabel(defaultPath);
         path.observe(this::configureLabel);
@@ -51,7 +51,7 @@ public class SaveFilePathComponent extends FlowLayout {
             newPath = "..." + newPath.substring(neededSlash);
         }
 
-        this.label.text(Component.literal(newPath));
+        this.label.text(Text.literal(newPath));
     }
 
     public List<String> patterns() {

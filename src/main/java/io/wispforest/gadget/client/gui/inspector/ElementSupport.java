@@ -1,11 +1,11 @@
 package io.wispforest.gadget.client.gui.inspector;
 
-import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.Element;
 
 import java.util.function.ToIntFunction;
 
-public interface ElementSupport<T extends GuiEventListener> {
-    static <T extends GuiEventListener> ElementSupport<T> fromLambda(ToIntFunction<T> getX,
+public interface ElementSupport<T extends Element> {
+    static <T extends Element> ElementSupport<T> fromLambda(ToIntFunction<T> getX,
                                                             ToIntFunction<T> getY,
                                                             ToIntFunction<T> getWidth,
                                                             ToIntFunction<T> getHeight) {

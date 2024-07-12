@@ -85,7 +85,7 @@ public abstract class FieldDataHolder<N extends FieldDataNode<N>> {
                                 text = text.substring(text.lastIndexOf('.') + 1);
 
                             head.append(" ").append(text);
-                        } else if (data.fieldObj() instanceof CompoundTagFieldObject nfo) {
+                        } else if (data.fieldObj() instanceof NbtCompoundFieldObject nfo) {
                             head.append(" ").append(nfo.data());
                         } else if (data.fieldObj() instanceof BytesFieldObject bfo) {
                             head.append(" ").append(bfo.text());
@@ -154,7 +154,7 @@ public abstract class FieldDataHolder<N extends FieldDataNode<N>> {
 
                                 writer.name("tag");
                                 writer.value(cfo.tag());
-                            } else if (data.fieldObj() instanceof CompoundTagFieldObject nfo) {
+                            } else if (data.fieldObj() instanceof NbtCompoundFieldObject nfo) {
                                 writer.name("data");
                                 writer.value(nfo.data().toString());
                             } else if (data.fieldObj() instanceof BytesFieldObject bfo) {

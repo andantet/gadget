@@ -8,9 +8,9 @@ import io.wispforest.owo.ui.component.TextBoxComponent;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.Sizing;
 import io.wispforest.owo.ui.util.UISounds;
-import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Function;
@@ -19,24 +19,24 @@ public class PrimitiveEditorWidget extends FlowLayout {
     private final NbtDataIsland island;
     private final NbtPath path;
     private final Object value;
-    private final Function<String, Tag> parser;
+    private final Function<String, NbtElement> parser;
 
     private final LabelComponent contentsLabel;
     private final LabelComponent editLabel;
     private final TextBoxComponent editField;
 
-    protected PrimitiveEditorWidget(NbtDataIsland island, NbtPath path, Object value, Function<String, Tag> parser) {
+    protected PrimitiveEditorWidget(NbtDataIsland island, NbtPath path, Object value, Function<String, NbtElement> parser) {
         super(Sizing.content(), Sizing.content(), Algorithm.HORIZONTAL);
         this.island = island;
         this.path = path;
 
         this.contentsLabel = Components.label(
-            Component.literal(value.toString())
-                .withStyle(ChatFormatting.GRAY)
+            Text.literal(value.toString())
+                .formatted(Formatting.GRAY)
         );
         this.value = value;
         this.parser = parser;
-        this.editLabel = Components.label(Component.literal(" ✎ "));
+        this.editLabel = Components.label(Text.literal(" ✎ "));
         this.editField = new TabTextBoxComponent(Sizing.fixed(100));
 
         GuiUtil.semiButton(this.editLabel, this::startEditing);
@@ -53,7 +53,7 @@ public class PrimitiveEditorWidget extends FlowLayout {
         if (keyCode == GLFW.GLFW_KEY_ENTER) {
             UISounds.playButtonSound();
 
-            path.set(island.data, parser.apply(editField.getValue()));
+            path.set(island.data, parser.apply(editField.getText()));
 
             island.reloadPath(path);
             island.reloader.accept(island.data);
@@ -80,8 +80,8 @@ public class PrimitiveEditorWidget extends FlowLayout {
         removeChild(editLabel);
 
         child(editField);
-        editField.setValue(value.toString());
-        editField.moveCursorToStart(false);
+        editField.setText(value.toString());
+        editField.setCursorToStart(false);
 
         if (focusHandler() != null)
             focusHandler().focus(editField, FocusSource.MOUSE_CLICK);

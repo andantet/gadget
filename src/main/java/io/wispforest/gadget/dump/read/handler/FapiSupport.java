@@ -5,10 +5,10 @@ import io.wispforest.gadget.dump.read.unwrapped.LinesUnwrappedPacket;
 import io.wispforest.gadget.network.FabricPacketHacks;
 import io.wispforest.gadget.util.ErrorSink;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public final class FapiSupport {
-    public static final ResourceLocation EARLY_REGISTRATION_CHANNEL = new ResourceLocation("fabric-networking-api-v1", "early_registration");
+    public static final Identifier EARLY_REGISTRATION_CHANNEL = new Identifier("fabric-networking-api-v1", "early_registration");
 
     private FapiSupport() {
 
@@ -28,7 +28,7 @@ public final class FapiSupport {
 
             if (type == null) return null;
 
-            FriendlyByteBuf buf = packet.wrappedBuf();
+            PacketByteBuf buf = packet.wrappedBuf();
             Object unwrapped = type.read(buf);
 
             return new FabricObjectPacket(unwrapped);
@@ -37,8 +37,8 @@ public final class FapiSupport {
         PacketUnwrapper.EVENT.register((packet, errSink) -> {
             if (!Objects.equals(packet.channelId(), EARLY_REGISTRATION_CHANNEL)) return null;
 
-            FriendlyByteBuf buf = packet.wrappedBuf();
-            List<ResourceLocation> channels = buf.readList(FriendlyByteBuf::readResourceLocation);
+            PacketByteBuf buf = packet.wrappedBuf();
+            List<Identifier> channels = buf.readList(PacketByteBuf::readIdentifier);
 
             return new EarlyRegisterPacket(channels);
         });
@@ -51,15 +51,15 @@ public final class FapiSupport {
         }
     }
 
-    public record EarlyRegisterPacket(List<ResourceLocation> channels) implements LinesUnwrappedPacket {
+    public record EarlyRegisterPacket(List<Identifier> channels) implements LinesUnwrappedPacket {
         @Override
-        public void render(Consumer<Component> out, ErrorSink errSink) {
-            for (ResourceLocation channel : channels) {
+        public void render(Consumer<Text> out, ErrorSink errSink) {
+            for (Identifier channel : channels) {
                 out.accept(
-                    Component.literal("+ ")
-                        .withStyle(ChatFormatting.GREEN)
-                        .append(Component.literal(channel.toString())
-                            .withStyle(ChatFormatting.GRAY)));
+                    Text.literal("+ ")
+                        .formatted(Formatting.GREEN)
+                        .append(Text.literal(channel.toString())
+                            .formatted(Formatting.GRAY)));
             }
         }
     }

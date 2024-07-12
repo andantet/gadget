@@ -1,19 +1,19 @@
 package io.wispforest.gadget.testmod.client;
 
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
 
 public class FunnyItem extends Item {
     public FunnyItem() {
-        super(new Item.Properties());
+        super(new Item.Settings());
     }
 
     @Override
-    public Component getName(ItemStack stack) {
+    public Text getName(ItemStack stack) {
         if (Screen.hasShiftDown()) {
-            stack.getOrCreateTag().putString("owl", "yay");
+            stack.getOrCreateNbt().putString("owl", "yay");
         }
 
         return super.getName(stack);

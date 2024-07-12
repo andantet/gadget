@@ -2,9 +2,9 @@ package io.wispforest.gadget.dump.fake;
 
 import io.wispforest.gadget.dump.read.unwrapped.UnwrappedPacket;
 import io.wispforest.gadget.util.ThrowableUtil;
-import net.minecraft.network.ConnectionProtocol;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.NetworkSide;
+import net.minecraft.network.NetworkState;
+import net.minecraft.network.PacketByteBuf;
 
 public record GadgetWriteErrorPacket(int packetId, String exceptionText) implements FakeGadgetPacket {
     public static final int ID = -1;
@@ -13,8 +13,8 @@ public record GadgetWriteErrorPacket(int packetId, String exceptionText) impleme
         return new GadgetWriteErrorPacket(packetId, ThrowableUtil.throwableToString(t));
     }
 
-    public static GadgetWriteErrorPacket read(FriendlyByteBuf buf, ConnectionProtocol state, PacketFlow side) {
-        return new GadgetWriteErrorPacket(buf.readVarInt(), buf.readUtf());
+    public static GadgetWriteErrorPacket read(PacketByteBuf buf, NetworkState state, NetworkSide side) {
+        return new GadgetWriteErrorPacket(buf.readVarInt(), buf.readString());
     }
 
     @Override
@@ -23,9 +23,9 @@ public record GadgetWriteErrorPacket(int packetId, String exceptionText) impleme
     }
 
     @Override
-    public void writeToDump(FriendlyByteBuf buf, ConnectionProtocol state, PacketFlow side) {
+    public void writeToDump(PacketByteBuf buf, NetworkState state, NetworkSide side) {
         buf.writeVarInt(packetId);
-        buf.writeUtf(exceptionText);
+        buf.writeString(exceptionText);
     }
 
     @Override

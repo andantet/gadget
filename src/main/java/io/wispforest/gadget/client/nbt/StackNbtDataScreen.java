@@ -10,11 +10,11 @@ import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.container.ScrollContainer;
 import io.wispforest.owo.ui.core.*;
 import io.wispforest.owo.ui.util.UISounds;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.screen.slot.Slot;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
@@ -22,28 +22,28 @@ import java.util.function.Consumer;
 
 public class StackNbtDataScreen extends BaseOwoScreen<FlowLayout> {
     private final NbtDataIsland island;
-    private final AbstractContainerScreen<?> parent;
+    private final HandledScreen<?> parent;
 
-    public StackNbtDataScreen(AbstractContainerScreen<?> parent, Slot slot) {
-        var stack = slot.getItem();
-        Consumer<CompoundTag> reloader = null;
+    public StackNbtDataScreen(HandledScreen<?> parent, Slot slot) {
+        var stack = slot.getStack();
+        Consumer<NbtCompound> reloader = null;
 
         if (ServerData.canReplaceStacks()) {
             reloader = newNbt -> {
-                stack.setTag(newNbt);
+                stack.setNbt(newNbt);
 
-                if (parent instanceof CreativeModeInventoryScreen) {
+                if (parent instanceof CreativeInventoryScreen) {
                     // Let it handle it.
                     return;
                 }
 
-                GadgetNetworking.CHANNEL.clientHandle().send(new ReplaceStackC2SPacket(slot.index, stack));
+                GadgetNetworking.CHANNEL.clientHandle().send(new ReplaceStackC2SPacket(slot.id, stack));
             };
         }
 
-        CompoundTag tag = stack.getTag();
+        NbtCompound tag = stack.getNbt();
 
-        if (tag == null) tag = new CompoundTag();
+        if (tag == null) tag = new NbtCompound();
 
         this.parent = parent;
         this.island = new NbtDataIsland(tag, reloader);
@@ -78,7 +78,7 @@ public class StackNbtDataScreen extends BaseOwoScreen<FlowLayout> {
 
         if (island.reloader != null) {
             var addButton = Containers.verticalFlow(Sizing.fixed(16), Sizing.fixed(16))
-                .child(Components.label(Component.literal("+"))
+                .child(Components.label(Text.literal("+"))
                     .verticalTextAlignment(VerticalAlignment.CENTER)
                     .horizontalTextAlignment(HorizontalAlignment.CENTER)
                     .positioning(Positioning.absolute(5, 4))
@@ -118,7 +118,7 @@ public class StackNbtDataScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     @Override
-    public void onClose() {
-        minecraft.setScreen(parent);
+    public void close() {
+        client.setScreen(parent);
     }
 }

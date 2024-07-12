@@ -1,16 +1,16 @@
 package io.wispforest.gadget.util;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,16 +57,16 @@ public final class PrettyPrinters {
             AtomicBoolean.class, AtomicInteger.class, AtomicLong.class,
 
             // Minecraft classes
-            BlockState.class, FluidState.class, Level.class, ResourceLocation.class);
+            BlockState.class, FluidState.class, World.class, Identifier.class);
 
         register(x -> "\"" + x + "\"", String.class);
 
         register(x -> "MinecraftServer", MinecraftServer.class);
 
-        register(x -> BuiltInRegistries.ITEM.getKey(x).toString(), Item.class);
-        register(x -> BuiltInRegistries.BLOCK.getKey(x).toString(), Block.class);
-        register(x -> BuiltInRegistries.ENTITY_TYPE.getKey(x).toString(), EntityType.class);
-        register(x -> Objects.toString(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(x), x.toString()), BlockEntityType.class);
-        register(x -> Objects.toString(BuiltInRegistries.MOB_EFFECT.getKey(x), x.toString()), MobEffect.class);
+        register(x -> Registries.ITEM.getId(x).toString(), Item.class);
+        register(x -> Registries.BLOCK.getId(x).toString(), Block.class);
+        register(x -> Registries.ENTITY_TYPE.getId(x).toString(), EntityType.class);
+        register(x -> Objects.toString(Registries.BLOCK_ENTITY_TYPE.getId(x), x.toString()), BlockEntityType.class);
+        register(x -> Objects.toString(Registries.STATUS_EFFECT.getId(x), x.toString()), StatusEffect.class);
     }
 }

@@ -5,10 +5,10 @@ import io.netty.buffer.Unpooled;
 import io.wispforest.gadget.Gadget;
 import io.wispforest.gadget.util.NetworkUtil;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.network.ConnectionProtocol;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.NetworkSide;
+import net.minecraft.network.NetworkState;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.Packet;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -55,14 +55,14 @@ public class PacketDumpWriter implements AutoCloseable {
         return path;
     }
 
-    public void write(Packet<?> packet, ConnectionProtocol state, PacketFlow side) {
+    public void write(Packet<?> packet, NetworkState state, NetworkSide side) {
         if (output == null) return;
 
-        FriendlyByteBuf buf = PacketByteBufs.create();
+        PacketByteBuf buf = PacketByteBufs.create();
 
         short flags = 0;
 
-        if (side == PacketFlow.SERVERBOUND)
+        if (side == NetworkSide.SERVERBOUND)
             flags |= 0b00000001;
 
         switch (state) {

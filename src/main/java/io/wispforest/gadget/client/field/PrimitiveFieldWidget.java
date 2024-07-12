@@ -11,8 +11,8 @@ import io.wispforest.owo.ui.component.TextBoxComponent;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.Sizing;
 import io.wispforest.owo.ui.util.UISounds;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
 public class PrimitiveFieldWidget extends FlowLayout {
@@ -30,10 +30,10 @@ public class PrimitiveFieldWidget extends FlowLayout {
         this.fieldPath = fieldPath;
 
         this.contentsLabel = Components.label(
-            Component.literal(pfo.contents())
-                .withStyle(ChatFormatting.GRAY)
+            Text.literal(pfo.contents())
+                .formatted(Formatting.GRAY)
         );
-        this.editLabel = Components.label(Component.literal(" ✎ "));
+        this.editLabel = Components.label(Text.literal(" ✎ "));
         this.editField = new TabTextBoxComponent(Sizing.fixed(100));
         this.editData = pfo.editData().orElseThrow();
 
@@ -51,7 +51,7 @@ public class PrimitiveFieldWidget extends FlowLayout {
         if (keyCode == GLFW.GLFW_KEY_ENTER) {
             UISounds.playButtonSound();
 
-            island.source().setPrimitiveAt(fieldPath, new PrimitiveEditData(editData.type(), editField.getValue()));
+            island.source().setPrimitiveAt(fieldPath, new PrimitiveEditData(editData.type(), editField.getText()));
 
             removeChild(editField);
 
@@ -75,8 +75,8 @@ public class PrimitiveFieldWidget extends FlowLayout {
         removeChild(editLabel);
 
         child(editField);
-        editField.setValue(editData.data());
-        editField.moveCursorToStart(false);
+        editField.setText(editData.data());
+        editField.setCursorToStart(false);
 
         if (focusHandler() != null)
             focusHandler().focus(editField, FocusSource.MOUSE_CLICK);

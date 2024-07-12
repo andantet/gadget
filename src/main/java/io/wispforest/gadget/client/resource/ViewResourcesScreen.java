@@ -1,6 +1,5 @@
 package io.wispforest.gadget.client.resource;
 
-import com.mojang.blaze3d.platform.NativeImage;
 import io.wispforest.gadget.Gadget;
 import io.wispforest.gadget.client.gui.GuiUtil;
 import io.wispforest.gadget.client.gui.SubObjectContainer;
@@ -11,10 +10,11 @@ import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.container.ScrollContainer;
 import io.wispforest.owo.ui.core.*;
 import io.wispforest.owo.ui.util.UISounds;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
@@ -31,20 +31,20 @@ import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 
 public class ViewResourcesScreen extends BaseOwoScreen<FlowLayout> {
-    private static final ResourceLocation FILE_TEXTURE_ID = Gadget.id("file_texture");
+    private static final Identifier FILE_TEXTURE_ID = Gadget.id("file_texture");
 
     private final Screen parent;
-    private final Map<ResourceLocation, Integer> resourcePaths;
-    private BiConsumer<ResourceLocation, Integer> resRequester;
-    private DynamicTexture prevTexture;
+    private final Map<Identifier, Integer> resourcePaths;
+    private BiConsumer<Identifier, Integer> resRequester;
+    private NativeImageBackedTexture prevTexture;
     private FlowLayout contents;
 
-    public ViewResourcesScreen(Screen parent, Map<ResourceLocation, Integer> resourcePaths) {
+    public ViewResourcesScreen(Screen parent, Map<Identifier, Integer> resourcePaths) {
         this.parent = parent;
         this.resourcePaths = resourcePaths;
     }
 
-    public void resRequester(BiConsumer<ResourceLocation, Integer> resRequester) {
+    public void resRequester(BiConsumer<Identifier, Integer> resRequester) {
         this.resRequester = resRequester;
     }
 
@@ -92,7 +92,7 @@ public class ViewResourcesScreen extends BaseOwoScreen<FlowLayout> {
                 parent.container
                     .child(entryContainer
                         .child(row
-                            .child(Components.label(Component.literal(split[split.length - 1])))
+                            .child(Components.label(Text.literal(split[split.length - 1])))
                             .child(sub.getSpinnyBoi()
                                 .margins(Insets.left(3))))
                         .child(sub));
@@ -107,9 +107,9 @@ public class ViewResourcesScreen extends BaseOwoScreen<FlowLayout> {
         }
     }
 
-    private FlowLayout makeRecipeRow(String name, ResourceLocation key, int index) {
+    private FlowLayout makeRecipeRow(String name, Identifier key, int index) {
         var row = Containers.horizontalFlow(Sizing.content(), Sizing.content());
-        var fileLabel = Components.label(Component.literal(name));
+        var fileLabel = Components.label(Text.literal(name));
 
         row.child(fileLabel);
         row.mouseEnter().subscribe(
@@ -131,7 +131,7 @@ public class ViewResourcesScreen extends BaseOwoScreen<FlowLayout> {
         return row;
     }
 
-    public void openFile(ResourceLocation id, Callable<InputStream> isGetter) {
+    public void openFile(Identifier id, Callable<InputStream> isGetter) {
         if (prevTexture != null) {
             prevTexture.close();
             prevTexture = null;
@@ -143,23 +143,23 @@ public class ViewResourcesScreen extends BaseOwoScreen<FlowLayout> {
                 contents.clearChildren();
 
                 if (id.getPath().endsWith(".png")) {
-                    prevTexture = new DynamicTexture(NativeImage.read(is));
-                    minecraft.getTextureManager().register(FILE_TEXTURE_ID, prevTexture);
+                    prevTexture = new NativeImageBackedTexture(NativeImage.read(is));
+                    client.getTextureManager().registerTexture(FILE_TEXTURE_ID, prevTexture);
 
                     contents
                         .child(Components.texture(
                             FILE_TEXTURE_ID,
                             0,
                             0,
-                            prevTexture.getPixels().getWidth(),
-                            prevTexture.getPixels().getHeight(),
-                            prevTexture.getPixels().getWidth(),
-                            prevTexture.getPixels().getHeight()))
+                            prevTexture.getImage().getWidth(),
+                            prevTexture.getImage().getHeight(),
+                            prevTexture.getImage().getWidth(),
+                            prevTexture.getImage().getHeight()))
                         .child(Components.label(
-                            Component.translatable(
+                            Text.translatable(
                                 "text.gadget.image_size",
-                                prevTexture.getPixels().getWidth(),
-                                prevTexture.getPixels().getHeight(),
+                                prevTexture.getImage().getWidth(),
+                                prevTexture.getImage().getHeight(),
                                 "PNG"
                             )));
 
@@ -220,8 +220,8 @@ public class ViewResourcesScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     @Override
-    public void onClose() {
-        minecraft.setScreen(parent);
+    public void close() {
+        client.setScreen(parent);
         if (prevTexture != null) {
             prevTexture.close();
         }
@@ -251,7 +251,7 @@ public class ViewResourcesScreen extends BaseOwoScreen<FlowLayout> {
             container
                 .child(entryContainer
                     .child(row
-                        .child(Components.label(Component.literal(name)))
+                        .child(Components.label(Text.literal(name)))
                         .child(sub.getSpinnyBoi()
                             .margins(Insets.left(3))))
                     .child(sub));

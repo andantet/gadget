@@ -5,7 +5,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.mappingio.MappingVisitor;
 import net.fabricmc.mappingio.format.Tiny2Reader;
 import net.minecraft.SharedConstants;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedReader;
@@ -19,9 +19,9 @@ import java.nio.file.Path;
 public final class IntermediaryLoader {
     public static final String INTERMEDIARY_ENDPOINT
         = "https://maven.fabricmc.net/net/fabricmc/intermediary/"
-        + SharedConstants.getCurrentVersion().getName()
+        + SharedConstants.getGameVersion().getName()
         + "/intermediary-"
-        + SharedConstants.getCurrentVersion().getName()
+        + SharedConstants.getGameVersion().getName()
         + "-v2.jar";
 
     private IntermediaryLoader() {
@@ -33,10 +33,10 @@ public final class IntermediaryLoader {
 
         Files.createDirectories(mappingsDir);
 
-        Path intermediaryPath = mappingsDir.resolve("intermediary-" + SharedConstants.getCurrentVersion().getName() + ".jar");
+        Path intermediaryPath = mappingsDir.resolve("intermediary-" + SharedConstants.getGameVersion().getName() + ".jar");
 
         if (!Files.exists(intermediaryPath)) {
-            toast.step(Component.translatable("message.gadget.progress.downloading_intermediary"));
+            toast.step(Text.translatable("message.gadget.progress.downloading_intermediary"));
 
             try (var is = toast.loadWithProgress(new URL(INTERMEDIARY_ENDPOINT))) {
                 FileUtils.copyToFile(is, intermediaryPath.toFile());

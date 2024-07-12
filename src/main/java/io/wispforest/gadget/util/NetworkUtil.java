@@ -4,50 +4,50 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.wispforest.gadget.dump.read.DumpedPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
-import net.minecraft.network.protocol.login.ClientboundCustomQueryPacket;
-import net.minecraft.network.protocol.login.ServerboundCustomQueryAnswerPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
+import net.minecraft.network.packet.c2s.login.LoginQueryResponseC2SPacket;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.login.LoginQueryRequestS2CPacket;
+import net.minecraft.util.Identifier;
 
 import java.util.function.Supplier;
 
 public final class NetworkUtil {
-    private static final ThreadLocal<Supplier<FriendlyByteBuf>> TMP_BUF_SOURCE = ThreadLocal.withInitial(() -> SupplierUtil.weakLazy(PacketByteBufs::create));
+    private static final ThreadLocal<Supplier<PacketByteBuf>> TMP_BUF_SOURCE = ThreadLocal.withInitial(() -> SupplierUtil.weakLazy(PacketByteBufs::create));
 
     private NetworkUtil() {
 
     }
 
-    public static ResourceLocation getChannelOrNull(Packet<?> packet) {
-        if (packet instanceof ClientboundCustomPayloadPacket pkt)
+    public static Identifier getChannelOrNull(Packet<?> packet) {
+        if (packet instanceof CustomPayloadS2CPacket pkt)
             return pkt.payload().id();
-        else if (packet instanceof ServerboundCustomPayloadPacket pkt)
+        else if (packet instanceof CustomPayloadC2SPacket pkt)
             return pkt.payload().id();
-        else if (packet instanceof ClientboundCustomQueryPacket pkt)
+        else if (packet instanceof LoginQueryRequestS2CPacket pkt)
             return pkt.payload().id();
         else
             return null;
     }
 
-    public static FriendlyByteBuf unwrapCustom(Packet<?> packet) {
-        if (packet instanceof ClientboundCustomPayloadPacket pkt) {
-            FriendlyByteBuf serializeBuffer = new FriendlyByteBuf(Unpooled.buffer());
-            pkt.payload().write(new SlicingFriendlyByteBuf(serializeBuffer));
+    public static PacketByteBuf unwrapCustom(Packet<?> packet) {
+        if (packet instanceof CustomPayloadS2CPacket pkt) {
+            PacketByteBuf serializeBuffer = new PacketByteBuf(Unpooled.buffer());
+            pkt.payload().write(new SlicingPacketByteBuf(serializeBuffer));
             return serializeBuffer;
-        } else if (packet instanceof ServerboundCustomPayloadPacket pkt) {
-            FriendlyByteBuf serializeBuffer = new FriendlyByteBuf(Unpooled.buffer());
-            pkt.payload().write(new SlicingFriendlyByteBuf(serializeBuffer));
+        } else if (packet instanceof CustomPayloadC2SPacket pkt) {
+            PacketByteBuf serializeBuffer = new PacketByteBuf(Unpooled.buffer());
+            pkt.payload().write(new SlicingPacketByteBuf(serializeBuffer));
             return serializeBuffer;
-        } else if (packet instanceof ClientboundCustomQueryPacket pkt) {
-            FriendlyByteBuf serializeBuffer = new FriendlyByteBuf(Unpooled.buffer());
-            pkt.payload().write(new SlicingFriendlyByteBuf(serializeBuffer));
+        } else if (packet instanceof LoginQueryRequestS2CPacket pkt) {
+            PacketByteBuf serializeBuffer = new PacketByteBuf(Unpooled.buffer());
+            pkt.payload().write(new SlicingPacketByteBuf(serializeBuffer));
             return serializeBuffer;
-        } else if (packet instanceof ServerboundCustomQueryAnswerPacket pkt && pkt.payload() != null) {
-            FriendlyByteBuf serializeBuffer = new FriendlyByteBuf(Unpooled.buffer());
-            pkt.payload().write(new SlicingFriendlyByteBuf(serializeBuffer));
+        } else if (packet instanceof LoginQueryResponseC2SPacket pkt && pkt.response() != null) {
+            PacketByteBuf serializeBuffer = new PacketByteBuf(Unpooled.buffer());
+            pkt.response().write(new SlicingPacketByteBuf(serializeBuffer));
             return serializeBuffer;
         } else {
             return null;
@@ -72,7 +72,7 @@ public final class NetworkUtil {
         };
     }
 
-    public static InfallibleClosable writeByteLength(FriendlyByteBuf buf) {
+    public static InfallibleClosable writeByteLength(PacketByteBuf buf) {
         int idIdx = buf.writerIndex();
         buf.writeInt(0);
         int startIdx = buf.writerIndex();
@@ -85,8 +85,8 @@ public final class NetworkUtil {
         };
     }
 
-    public static FriendlyByteBuf readOfLengthIntoTmp(FriendlyByteBuf buf) {
-        FriendlyByteBuf tmpBuf = TMP_BUF_SOURCE.get().get();
+    public static PacketByteBuf readOfLengthIntoTmp(PacketByteBuf buf) {
+        PacketByteBuf tmpBuf = TMP_BUF_SOURCE.get().get();
         int length = buf.readInt();
 
         tmpBuf.readerIndex(0);

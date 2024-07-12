@@ -4,8 +4,8 @@ import me.shedaniel.rei.api.client.REIRuntime;
 import me.shedaniel.rei.api.client.gui.widgets.WidgetWithBounds;
 import me.shedaniel.rei.api.client.registry.screen.OverlayDecider;
 import me.shedaniel.rei.api.client.registry.screen.ScreenRegistry;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.ActionResult;
 
 public class REISupport {
     private REISupport() {
@@ -25,15 +25,15 @@ public class REISupport {
 
             if (!REIRuntime.getInstance().isOverlayVisible()) return;
             if (overlay.isEmpty()) return;
-            if (screen != Minecraft.getInstance().screen) return;
+            if (screen != MinecraftClient.getInstance().currentScreen) return;
 
             boolean succeeded = false;
             for (OverlayDecider decider : ScreenRegistry.getInstance().getDeciders(screen)) {
-                InteractionResult result = decider.shouldScreenBeOverlaid(screen);
+                ActionResult result = decider.shouldScreenBeOverlaid(screen);
 
-                if (result == InteractionResult.FAIL) {
+                if (result == ActionResult.FAIL) {
                     return;
-                } else if (result == InteractionResult.SUCCESS) {
+                } else if (result == ActionResult.SUCCESS) {
                     succeeded = true;
                     break;
                 }

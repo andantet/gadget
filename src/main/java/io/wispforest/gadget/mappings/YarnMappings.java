@@ -28,7 +28,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.mappingio.MappingVisitor;
 import net.fabricmc.mappingio.format.Tiny2Reader;
 import net.minecraft.SharedConstants;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class YarnMappings extends LoadingMappings {
-    private static final String YARN_API_ENTRYPOINT = "https://meta.fabricmc.net/v2/versions/yarn/" + SharedConstants.getCurrentVersion().getId();
+    private static final String YARN_API_ENTRYPOINT = "https://meta.fabricmc.net/v2/versions/yarn/" + SharedConstants.getGameVersion().getId();
 
     @Override
     protected void load(ProgressToast toast, MappingVisitor visitor) {
@@ -48,10 +48,10 @@ public class YarnMappings extends LoadingMappings {
 
             Files.createDirectories(mappingsDir);
 
-            Path yarnPath = mappingsDir.resolve("yarn-" + SharedConstants.getCurrentVersion().getId() + ".jar");
+            Path yarnPath = mappingsDir.resolve("yarn-" + SharedConstants.getGameVersion().getId() + ".jar");
 
             if (!Files.exists(yarnPath)) {
-                toast.step(Component.translatable("message.gadget.progress.downloading_yarn_versions"));
+                toast.step(Text.translatable("message.gadget.progress.downloading_yarn_versions"));
                 YarnVersion[] versions = DownloadUtil.read(toast, YARN_API_ENTRYPOINT, YarnVersion[].class);
 
                 if (versions.length == 0) {
@@ -68,7 +68,7 @@ public class YarnMappings extends LoadingMappings {
                     }
                 }
 
-                toast.step(Component.translatable("message.gadget.progress.downloading_yarn"));
+                toast.step(Text.translatable("message.gadget.progress.downloading_yarn"));
                 try (var is = toast.loadWithProgress(new URL("https://maven.fabricmc.net/net/fabricmc/yarn/" + latestVersion + "/yarn-" + latestVersion + "-v2.jar"))) {
                     FileUtils.copyInputStreamToFile(is, yarnPath.toFile());
                 }

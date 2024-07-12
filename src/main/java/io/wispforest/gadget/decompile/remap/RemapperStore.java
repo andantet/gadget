@@ -1,7 +1,7 @@
 package io.wispforest.gadget.decompile.remap;
 
 import net.fabricmc.mappingio.tree.MappingTree;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 import org.objectweb.asm.ClassReader;
 
 import java.util.Collections;
@@ -13,12 +13,12 @@ import java.util.function.Function;
 public class RemapperStore {
     private final Map<String, AnalyzedClass> analyzedClasses = new HashMap<>();
     private final Function<String, byte[]> bytecodeProvider;
-    private final Consumer<Component> logConsumer;
+    private final Consumer<Text> logConsumer;
     final MappingTree tree;
     final int srcId;
     final int dstId;
 
-    public RemapperStore(Function<String, byte[]> bytecodeProvider, Consumer<Component> logConsumer, MappingTree tree,
+    public RemapperStore(Function<String, byte[]> bytecodeProvider, Consumer<Text> logConsumer, MappingTree tree,
                          String src, String dst) {
         this.bytecodeProvider = bytecodeProvider;
         this.logConsumer = logConsumer;
@@ -48,7 +48,7 @@ public class RemapperStore {
                 Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         }
 
-        logConsumer.accept(Component.translatable("text.gadget.log.loading_class", name));
+        logConsumer.accept(Text.translatable("text.gadget.log.loading_class", name));
 
         byte[] bytes = bytecodeProvider.apply(name);
         if (bytes == null) return null;

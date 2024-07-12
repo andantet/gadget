@@ -1,22 +1,22 @@
 package io.wispforest.gadget.dump.fake.recipe;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.util.Identifier;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 public record ReadErrorRecipe(byte[] data, Exception exception) implements FakeGadgetRecipe {
-    public static RecipeHolder<ReadErrorRecipe> from(Exception exception, FriendlyByteBuf buf) {
+    public static RecipeEntry<ReadErrorRecipe> from(Exception exception, PacketByteBuf buf) {
         int start = buf.readerIndex();
-        ResourceLocation recipeId = new ResourceLocation(
+        Identifier recipeId = new Identifier(
             "gadget-fake",
             "cringe-recipe-bruh-" + ThreadLocalRandom.current().nextInt()
         );
 
         try {
-            buf.readResourceLocation();
-            recipeId = buf.readResourceLocation();
+            buf.readIdentifier();
+            recipeId = buf.readIdentifier();
         } catch (Exception e) {
             exception.addSuppressed(e);
         }
@@ -25,7 +25,7 @@ public record ReadErrorRecipe(byte[] data, Exception exception) implements FakeG
         byte[] bytes = new byte[buf.readableBytes()];
         buf.readBytes(bytes);
 
-        return new RecipeHolder<>(recipeId, new ReadErrorRecipe(bytes, exception));
+        return new RecipeEntry<>(recipeId, new ReadErrorRecipe(bytes, exception));
     }
 
     @Override

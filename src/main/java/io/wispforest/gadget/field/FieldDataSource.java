@@ -4,7 +4,7 @@ import io.wispforest.gadget.desc.edit.PrimitiveEditData;
 import io.wispforest.gadget.network.FieldData;
 import io.wispforest.gadget.path.ObjectPath;
 import io.wispforest.gadget.path.PathStep;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -24,7 +24,7 @@ public interface FieldDataSource {
         throw new UnsupportedOperationException();
     }
 
-    default CompletableFuture<Void> setCompoundTagAt(ObjectPath path, CompoundTag tag) {
+    default CompletableFuture<Void> setNbtCompoundAt(ObjectPath path, NbtCompound tag) {
         throw new UnsupportedOperationException();
     }
 }

@@ -19,12 +19,12 @@ import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.Insets;
 import io.wispforest.owo.ui.core.Sizing;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -66,17 +66,17 @@ public class FieldDataIsland extends FieldDataHolder<ClientFieldDataNode> {
                 row.child(anchor);
             }
 
-            var nameText = Component.literal(path.name());
+            var nameText = Text.literal(path.name());
 
             if (data.isMixin())
-                nameText.withStyle(ChatFormatting.GRAY)
-                    .withStyle(x -> x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        Component.literal("Mixin-injected field")
-                            .withStyle(ChatFormatting.YELLOW))));
+                nameText.formatted(Formatting.GRAY)
+                    .styled(x -> x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        Text.literal("Mixin-injected field")
+                            .formatted(Formatting.YELLOW))));
 
-            MutableComponent rowText = Component.literal("")
-                .append(Component.literal(data.obj().type().charAt(0) + " ")
-                    .withStyle(x -> x.withColor(data.obj().color())))
+            MutableText rowText = Text.literal("")
+                .append(Text.literal(data.obj().type().charAt(0) + " ")
+                    .styled(x -> x.withColor(data.obj().color())))
                 .append(nameText);
             var rowLabel = Components.label(rowText);
 
@@ -84,24 +84,24 @@ public class FieldDataIsland extends FieldDataHolder<ClientFieldDataNode> {
 
             if (data.obj() instanceof PrimitiveFieldObject pfo) {
                 if (!data.isFinal() && source.isMutable() && pfo.editData().isPresent()) {
-                    rowText.append(Component.literal(" = ")
-                        .withStyle(ChatFormatting.GRAY));
+                    rowText.append(Text.literal(" = ")
+                        .formatted(Formatting.GRAY));
                     row.child(new PrimitiveFieldWidget(this, path, pfo));
                 } else {
-                    rowText.append(Component.literal(" = " + pfo.contents())
-                        .withStyle(ChatFormatting.GRAY));
+                    rowText.append(Text.literal(" = " + pfo.contents())
+                        .formatted(Formatting.GRAY));
                 }
             } else if (data.obj() instanceof ErrorFieldObject efo) {
-                rowText.append(Component.literal(" " + efo.exceptionClass())
-                    .withStyle(x -> x
-                        .withColor(ChatFormatting.RED)
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.nullToEmpty(efo.fullExceptionText())))));
+                rowText.append(Text.literal(" " + efo.exceptionClass())
+                    .styled(x -> x
+                        .withColor(Formatting.RED)
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of(efo.fullExceptionText())))));
             } else if (data.obj() instanceof ComplexFieldObject cfo) {
                 var subContainer = new SubObjectContainer(
                     container -> {
                         node.ensureChildren()
                             .thenAcceptAsync(newChildren -> addChildrenTo(container, newChildren),
-                                Minecraft.getInstance());
+                                MinecraftClient.getInstance());
                     },
                     SubObjectContainer::clearChildren);
                 node.subObjectContainer = subContainer;
@@ -113,8 +113,8 @@ public class FieldDataIsland extends FieldDataHolder<ClientFieldDataNode> {
                     text = text.substring(text.lastIndexOf('.') + 1);
 
                 rowText.append(
-                    Component.literal(" " + text + " ")
-                        .withStyle(ChatFormatting.GRAY)
+                    Text.literal(" " + text + " ")
+                        .formatted(Formatting.GRAY)
                 );
 
                 if (!cfo.isRepeat()) {
@@ -122,7 +122,7 @@ public class FieldDataIsland extends FieldDataHolder<ClientFieldDataNode> {
                         .child(subContainer.getSpinnyBoi()
                             .sizing(Sizing.fixed(10), Sizing.content()));
                 }
-            } else if (data.obj() instanceof CompoundTagFieldObject nfo) {
+            } else if (data.obj() instanceof NbtCompoundFieldObject nfo) {
                 var subContainer = new SubObjectContainer(
                     unused -> {
                     },
@@ -131,10 +131,10 @@ public class FieldDataIsland extends FieldDataHolder<ClientFieldDataNode> {
                 node.subObjectContainer = subContainer;
                 node.containerComponent.child(subContainer);
 
-                Consumer<CompoundTag> reloader = null;
+                Consumer<NbtCompound> reloader = null;
 
                 if (source.isMutable())
-                    reloader = newData -> source.setCompoundTagAt(path, newData);
+                    reloader = newData -> source.setNbtCompoundAt(path, newData);
 
                 var island = new NbtDataIsland(nfo.data(), reloader);
 
@@ -145,7 +145,7 @@ public class FieldDataIsland extends FieldDataHolder<ClientFieldDataNode> {
                         .sizing(Sizing.fixed(10), Sizing.content()));
 
                 if (source.isMutable()) {
-                    var plusLabel = Components.label(Component.nullToEmpty("+"));
+                    var plusLabel = Components.label(Text.of("+"));
 
                     GuiUtil.semiButton(plusLabel, (mouseX, mouseY) ->
                         island.typeSelector(
@@ -166,8 +166,8 @@ public class FieldDataIsland extends FieldDataHolder<ClientFieldDataNode> {
                 node.containerComponent.child(subContainer);
 
                 rowText.append(
-                    Component.literal(" " + bfo.text() + " ")
-                        .withStyle(ChatFormatting.GRAY)
+                    Text.literal(" " + bfo.text() + " ")
+                        .formatted(Formatting.GRAY)
                 );
 
                 subContainer.child(GuiUtil.hexDump(bfo.data(), false));
@@ -182,7 +182,7 @@ public class FieldDataIsland extends FieldDataHolder<ClientFieldDataNode> {
                     if (button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) return false;
 
                     GuiUtil.contextMenu(rowLabel, mouseX, mouseY)
-                        .button(Component.translatable("text.gadget.hide_field"), unused -> {
+                        .button(Text.translatable("text.gadget.hide_field"), unused -> {
                             ArrayList<String> hiddenFields = new ArrayList<>(Gadget.CONFIG.hiddenFields());
                             hiddenFields.add(step.fieldId());
                             Gadget.CONFIG.hiddenFields(hiddenFields);

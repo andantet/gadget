@@ -5,15 +5,15 @@ import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.layers.Layer;
 import io.wispforest.owo.ui.layers.Layers;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
-import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 
 public class ContextMenuScreens {
     private static final Layer<Screen, FlowLayout> LAYER = Layers.add(
         Containers::verticalFlow,
         instance -> { },
-        SelectWorldScreen.class, JoinMultiplayerScreen.class
+        SelectWorldScreen.class, MultiplayerScreen.class
     );
 
     public static void init() {

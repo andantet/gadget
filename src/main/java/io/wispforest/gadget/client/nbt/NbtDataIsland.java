@@ -2,18 +2,18 @@ package io.wispforest.gadget.client.nbt;
 
 import io.wispforest.gadget.client.gui.GuiUtil;
 import io.wispforest.gadget.client.gui.SubObjectContainer;
-import io.wispforest.gadget.mixin.TagTypesAccessor;
+import io.wispforest.gadget.mixin.NbtTypesAccessor;
 import io.wispforest.owo.ui.component.Components;
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.Insets;
 import io.wispforest.owo.ui.core.Sizing;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.*;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -24,21 +24,21 @@ import java.util.function.Predicate;
 public class NbtDataIsland extends FlowLayout {
     private final Map<NbtPath, WidgetData> elements = new HashMap<>();
 
-    final CompoundTag data;
-    final @Nullable Consumer<CompoundTag> reloader;
+    final NbtCompound data;
+    final @Nullable Consumer<NbtCompound> reloader;
 
-    public NbtDataIsland(CompoundTag data, @Nullable Consumer<CompoundTag> reloader) {
+    public NbtDataIsland(NbtCompound data, @Nullable Consumer<NbtCompound> reloader) {
         super(Sizing.content(), Sizing.content(), Algorithm.VERTICAL);
 
         this.data = data;
         this.reloader = reloader;
 
-        for (String key : data.getAllKeys()) {
+        for (String key : data.getKeys()) {
             makeComponent(new NbtPath(new String[] {key}), data.get(key));
         }
     }
 
-    void makeComponent(NbtPath path, Tag element) {
+    void makeComponent(NbtPath path, NbtElement element) {
         FlowLayout full = Containers.verticalFlow(Sizing.content(), Sizing.content());
         FlowLayout row = Containers.horizontalFlow(Sizing.content(), Sizing.content());
         full.child(row);
@@ -65,65 +65,65 @@ public class NbtDataIsland extends FlowLayout {
 
         elements.put(path, widgetData);
 
-        MutableComponent rowText = Component.literal("");
+        MutableText rowText = Text.literal("");
         LabelComponent label = Components.label(rowText);
 
         row.child(label);
 
-        rowText.append(typeText(element.getType(), ""));
+        rowText.append(typeText(element.getNbtType(), ""));
         rowText.append(" " + path.name() + " ");
 
-        if (element instanceof StringTag string) {
-            rowText.append(Component.literal("= ")
-                .withStyle(ChatFormatting.GRAY));
+        if (element instanceof NbtString string) {
+            rowText.append(Text.literal("= ")
+                .formatted(Formatting.GRAY));
 
             if (reloader != null) {
-                row.child(new PrimitiveEditorWidget(this, path, string.getAsString(), StringTag::valueOf));
+                row.child(new PrimitiveEditorWidget(this, path, string.asString(), NbtString::of));
             } else {
-                rowText.append(Component.literal( string.getAsString() + " ")
-                    .withStyle(ChatFormatting.GRAY));
+                rowText.append(Text.literal( string.asString() + " ")
+                    .formatted(Formatting.GRAY));
             }
-        } else if (element instanceof NumericTag number) {
-            rowText.append(Component.literal("= ")
-                .withStyle(ChatFormatting.GRAY));
+        } else if (element instanceof AbstractNbtNumber number) {
+            rowText.append(Text.literal("= ")
+                .formatted(Formatting.GRAY));
 
             if (reloader != null) {
-                row.child(new PrimitiveEditorWidget(this, path, number.getAsNumber(), text -> {
-                    if (number instanceof ByteTag)
-                        return ByteTag.valueOf(Byte.parseByte(text));
-                    else if (number instanceof ShortTag)
-                        return ShortTag.valueOf(Short.parseShort(text));
-                    else if (number instanceof IntTag)
-                        return IntTag.valueOf(Integer.parseInt(text));
-                    else if (number instanceof LongTag)
-                        return LongTag.valueOf(Long.parseLong(text));
-                    else if (number instanceof FloatTag)
-                        return FloatTag.valueOf(Float.parseFloat(text));
-                    else if (number instanceof DoubleTag)
-                        return DoubleTag.valueOf(Double.parseDouble(text));
+                row.child(new PrimitiveEditorWidget(this, path, number.numberValue(), text -> {
+                    if (number instanceof NbtByte)
+                        return NbtByte.of(Byte.parseByte(text));
+                    else if (number instanceof NbtShort)
+                        return NbtShort.of(Short.parseShort(text));
+                    else if (number instanceof NbtInt)
+                        return NbtInt.of(Integer.parseInt(text));
+                    else if (number instanceof NbtLong)
+                        return NbtLong.of(Long.parseLong(text));
+                    else if (number instanceof NbtFloat)
+                        return NbtFloat.of(Float.parseFloat(text));
+                    else if (number instanceof NbtDouble)
+                        return NbtDouble.of(Double.parseDouble(text));
                     else
                         throw new IllegalStateException("Unknown AbstractNbtNumber type!");
                 }));
             } else {
-                rowText.append(Component.literal( number.getAsNumber() + " ")
-                    .withStyle(ChatFormatting.GRAY));
+                rowText.append(Text.literal( number.numberValue() + " ")
+                    .formatted(Formatting.GRAY));
             }
-        } else if (element instanceof CompoundTag compound) {
+        } else if (element instanceof NbtCompound compound) {
             widgetData.subContainer = new SubObjectContainer(unused -> {}, unused -> {});
 
             row.child(widgetData.subContainer.getSpinnyBoi());
 
             full.child(widgetData.subContainer);
 
-            for (String key : compound.getAllKeys()) {
-                Tag sub = compound.get(key);
+            for (String key : compound.getKeys()) {
+                NbtElement sub = compound.get(key);
                 var subPath = path.then(key);
 
                 makeComponent(subPath, sub);
             }
 
             if (reloader != null) {
-                var plusLabel = Components.label(Component.nullToEmpty("+ "));
+                var plusLabel = Components.label(Text.of("+ "));
 
                 GuiUtil.semiButton(plusLabel, (mouseX, mouseY) ->
                     typeSelector(
@@ -134,7 +134,7 @@ public class NbtDataIsland extends FlowLayout {
 
                 row.child(plusLabel);
             }
-        } else if (element instanceof CollectionTag<?> list) {
+        } else if (element instanceof AbstractNbtList<?> list) {
             widgetData.subContainer = new SubObjectContainer(unused -> {}, unused -> {});
 
             row.child(widgetData.subContainer.getSpinnyBoi());
@@ -142,14 +142,14 @@ public class NbtDataIsland extends FlowLayout {
             full.child(widgetData.subContainer);
 
             for (int i = 0; i < list.size(); i++) {
-                Tag sub = list.get(i);
+                NbtElement sub = list.get(i);
                 var subPath = path.then(String.valueOf(i));
 
                 makeComponent(subPath, sub);
             }
 
             if (reloader != null) {
-                var plusLabel = Components.label(Component.nullToEmpty("+ "));
+                var plusLabel = Components.label(Text.of("+ "));
                 Predicate<String> nameVerifier = name -> {
                     try {
                         var index = Integer.parseInt(name);
@@ -161,7 +161,7 @@ public class NbtDataIsland extends FlowLayout {
                 };
 
                 GuiUtil.semiButton(plusLabel, (mouseX, mouseY) -> {
-                    if (list instanceof ListTag) {
+                    if (list instanceof NbtList) {
                         if (list.isEmpty()) {
                             typeSelector(
                                 (int) (plusLabel.x() + mouseX),
@@ -169,17 +169,17 @@ public class NbtDataIsland extends FlowLayout {
                                 type -> widgetData.subContainer.child(new KeyAdderWidget(this, path, type, nameVerifier)));
                         } else {
                             widgetData.subContainer.child(
-                                new KeyAdderWidget(this, path, TagTypes.getType(list.getElementType()), nameVerifier));
+                                new KeyAdderWidget(this, path, NbtTypes.byId(list.getHeldType()), nameVerifier));
                         }
-                    } else if (list instanceof ByteArrayTag) {
+                    } else if (list instanceof NbtByteArray) {
                         widgetData.subContainer.child(
-                            new KeyAdderWidget(this, path, ByteTag.TYPE, nameVerifier));
-                    } else if (list instanceof IntArrayTag) {
+                            new KeyAdderWidget(this, path, NbtByte.TYPE, nameVerifier));
+                    } else if (list instanceof NbtIntArray) {
                         widgetData.subContainer.child(
-                            new KeyAdderWidget(this, path, IntTag.TYPE, nameVerifier));
-                    } else if (list instanceof LongArrayTag) {
+                            new KeyAdderWidget(this, path, NbtInt.TYPE, nameVerifier));
+                    } else if (list instanceof NbtLongArray) {
                         widgetData.subContainer.child(
-                            new KeyAdderWidget(this, path, LongTag.TYPE, nameVerifier));
+                            new KeyAdderWidget(this, path, NbtLong.TYPE, nameVerifier));
                     }
                 });
 
@@ -190,7 +190,7 @@ public class NbtDataIsland extends FlowLayout {
         FlowLayout target = subContainerOf(path.parent());
 
         if (reloader != null) {
-            var crossLabel = Components.label(Component.literal("❌"));
+            var crossLabel = Components.label(Text.literal("❌"));
             GuiUtil.semiButton(crossLabel, () -> {
                 path.remove(data);
                 reloader.accept(data);
@@ -201,10 +201,10 @@ public class NbtDataIsland extends FlowLayout {
             row.child(crossLabel);
         }
 
-        var copyLabel = Components.label(Component.literal("C"));
-        copyLabel.tooltip(Component.translatable("chat.copy.click"));
+        var copyLabel = Components.label(Text.literal("C"));
+        copyLabel.tooltip(Text.translatable("chat.copy.click"));
         GuiUtil.semiButton(copyLabel, () -> {
-             Minecraft.getInstance().keyboardHandler.setClipboard(path.follow(data).getAsString());
+             MinecraftClient.getInstance().keyboard.setClipboard(path.follow(data).asString());
         });
         row.child(copyLabel);
 
@@ -215,59 +215,59 @@ public class NbtDataIsland extends FlowLayout {
         target.child(idx, full);
     }
 
-    public void typeSelector(int mouseX, int mouseY, Consumer<TagType<?>> consumer) {
+    public void typeSelector(int mouseX, int mouseY, Consumer<NbtType<?>> consumer) {
         if (this.reloader == null) {
             throw new IllegalStateException("Tried to open type selector with read-only NBT island!");
         }
 
         var dropdown = GuiUtil.contextMenu(GuiUtil.root(this), mouseX, mouseY);
 
-        for (TagType<?> type : TagTypesAccessor.getTYPES()) {
+        for (NbtType<?> type : NbtTypesAccessor.getVALUES()) {
             dropdown.button(typeText(type, ".full"),
                 unused -> consumer.accept(type));
         }
     }
 
-    MutableComponent typeText(TagType<?> type, String suffix) {
+    MutableText typeText(NbtType<?> type, String suffix) {
         String name;
 
-        if (type == CompoundTag.TYPE)
+        if (type == NbtCompound.TYPE)
             name = "compound";
-        else if (type == ListTag.TYPE)
+        else if (type == NbtList.TYPE)
             name = "list";
-        else if (type == ByteArrayTag.TYPE)
+        else if (type == NbtByteArray.TYPE)
             name = "byte_array";
-        else if (type == IntArrayTag.TYPE)
+        else if (type == NbtIntArray.TYPE)
             name = "int_array";
-        else if (type == LongArrayTag.TYPE)
+        else if (type == NbtLongArray.TYPE)
             name = "long_array";
-        else if (type == StringTag.TYPE)
+        else if (type == NbtString.TYPE)
             name = "string";
-        else if (type == ByteTag.TYPE)
+        else if (type == NbtByte.TYPE)
             name = "byte";
-        else if (type == ShortTag.TYPE)
+        else if (type == NbtShort.TYPE)
             name = "short";
-        else if (type == IntTag.TYPE)
+        else if (type == NbtInt.TYPE)
             name = "int";
-        else if (type == LongTag.TYPE)
+        else if (type == NbtLong.TYPE)
             name = "long";
-        else if (type == FloatTag.TYPE)
+        else if (type == NbtFloat.TYPE)
             name = "float";
-        else if (type == DoubleTag.TYPE)
+        else if (type == NbtDouble.TYPE)
             name = "double";
-        else if (type == EndTag.TYPE)
+        else if (type == NbtEnd.TYPE)
             name = "end";
         else
             name = "unknown";
 
-        return Component.translatable("text.gadget.nbt." + name + suffix);
+        return Text.translatable("text.gadget.nbt." + name + suffix);
     }
 
     public void reloadPath(NbtPath path) {
         if (path.steps().length == 0) {
             clearChildren();
 
-            for (String key : data.getAllKeys()) {
+            for (String key : data.getKeys()) {
                 makeComponent(new NbtPath(new String[] {key}), data.get(key));
             }
         } else {

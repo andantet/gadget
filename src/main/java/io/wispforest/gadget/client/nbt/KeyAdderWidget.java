@@ -8,9 +8,9 @@ import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.Insets;
 import io.wispforest.owo.ui.core.ParentComponent;
 import io.wispforest.owo.ui.core.Sizing;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.*;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Predicate;
@@ -18,14 +18,14 @@ import java.util.function.Predicate;
 public class KeyAdderWidget extends FlowLayout {
     private final NbtDataIsland island;
     private final NbtPath parentPath;
-    private final TagType<?> type;
+    private final NbtType<?> type;
     private final Predicate<String> nameVerifier;
 
     private final TextBoxComponent nameField;
     private final TextBoxComponent valueField;
     private boolean wasMounted = false;
 
-    public KeyAdderWidget(NbtDataIsland island, NbtPath parentPath, TagType<?> type, Predicate<String> nameVerifier) {
+    public KeyAdderWidget(NbtDataIsland island, NbtPath parentPath, NbtType<?> type, Predicate<String> nameVerifier) {
         super(Sizing.content(), Sizing.content(), Algorithm.HORIZONTAL);
 
         this.island = island;
@@ -39,18 +39,18 @@ public class KeyAdderWidget extends FlowLayout {
             .verticalSizing(Sizing.fixed(8)));
 
         if (typeNeedsValue(type)) {
-            child(Components.label(Component.nullToEmpty(" = ")));
+            child(Components.label(Text.of(" = ")));
 
             child((this.valueField = new TabTextBoxComponent(Sizing.fixed(75)))
                 .verticalSizing(Sizing.fixed(8)));
         } else if (typeNeedsSize(type)) {
-            child(Components.label(Component.nullToEmpty("["))
+            child(Components.label(Text.of("["))
                 .margins(Insets.horizontal(2)));
 
             child((this.valueField = new TabTextBoxComponent(Sizing.fixed(50)))
                 .verticalSizing(Sizing.fixed(8)));
 
-            child(Components.label(Component.nullToEmpty("]"))
+            child(Components.label(Text.of("]"))
                 .margins(Insets.horizontal(2)));
         } else {
             this.valueField = null;
@@ -81,7 +81,7 @@ public class KeyAdderWidget extends FlowLayout {
     }
 
     private void onFieldFocusLost() {
-        Minecraft.getInstance().tell(() -> {
+        MinecraftClient.getInstance().send(() -> {
             var newFocused = focusHandler().focused();
 
             if (newFocused == nameField || newFocused == valueField) return;
@@ -91,41 +91,41 @@ public class KeyAdderWidget extends FlowLayout {
     }
 
     private void commit() {
-        if (!nameVerifier.test(nameField.getValue())) return;
-        if (valueField != null && !verifyValue(valueField.getValue())) return;
+        if (!nameVerifier.test(nameField.getText())) return;
+        if (valueField != null && !verifyValue(valueField.getText())) return;
 
-        Tag element;
+        NbtElement element;
 
-        if (type == CompoundTag.TYPE)
-            element = new CompoundTag();
-        else if (type == ListTag.TYPE)
-            element = new ListTag();
-        else if (type == ByteArrayTag.TYPE)
-            element = new ByteArrayTag(new byte[Integer.parseInt(valueField.getValue())]);
-        else if (type == IntArrayTag.TYPE)
-            element = new IntArrayTag(new int[Integer.parseInt(valueField.getValue())]);
-        else if (type == LongArrayTag.TYPE)
-            element = new LongArrayTag(new long[Integer.parseInt(valueField.getValue())]);
-        else if (type == StringTag.TYPE)
-            element = StringTag.valueOf(valueField.getValue());
-        else if (type == ByteTag.TYPE)
-            element = ByteTag.valueOf(Byte.parseByte(valueField.getValue()));
-        else if (type == ShortTag.TYPE)
-            element = ShortTag.valueOf(Short.parseShort(valueField.getValue()));
-        else if (type == IntTag.TYPE)
-            element = IntTag.valueOf(Integer.parseInt(valueField.getValue()));
-        else if (type == LongTag.TYPE)
-            element = LongTag.valueOf(Long.parseLong(valueField.getValue()));
-        else if (type == FloatTag.TYPE)
-            element = FloatTag.valueOf(Float.parseFloat(valueField.getValue()));
-        else if (type == DoubleTag.TYPE)
-            element = DoubleTag.valueOf(Double.parseDouble(valueField.getValue()));
-        else if (type == EndTag.TYPE)
-            element = EndTag.INSTANCE;
+        if (type == NbtCompound.TYPE)
+            element = new NbtCompound();
+        else if (type == NbtList.TYPE)
+            element = new NbtList();
+        else if (type == NbtByteArray.TYPE)
+            element = new NbtByteArray(new byte[Integer.parseInt(valueField.getText())]);
+        else if (type == NbtIntArray.TYPE)
+            element = new NbtIntArray(new int[Integer.parseInt(valueField.getText())]);
+        else if (type == NbtLongArray.TYPE)
+            element = new NbtLongArray(new long[Integer.parseInt(valueField.getText())]);
+        else if (type == NbtString.TYPE)
+            element = NbtString.of(valueField.getText());
+        else if (type == NbtByte.TYPE)
+            element = NbtByte.of(Byte.parseByte(valueField.getText()));
+        else if (type == NbtShort.TYPE)
+            element = NbtShort.of(Short.parseShort(valueField.getText()));
+        else if (type == NbtInt.TYPE)
+            element = NbtInt.of(Integer.parseInt(valueField.getText()));
+        else if (type == NbtLong.TYPE)
+            element = NbtLong.of(Long.parseLong(valueField.getText()));
+        else if (type == NbtFloat.TYPE)
+            element = NbtFloat.of(Float.parseFloat(valueField.getText()));
+        else if (type == NbtDouble.TYPE)
+            element = NbtDouble.of(Double.parseDouble(valueField.getText()));
+        else if (type == NbtEnd.TYPE)
+            element = NbtEnd.INSTANCE;
         else
             throw new IllegalStateException("Unknown NbtType");
 
-        NbtPath path = parentPath.then(nameField.getValue());
+        NbtPath path = parentPath.then(nameField.getText());
         path.add(island.data, element);
         island.makeComponent(path, element);
         island.reloader.accept(island.data);
@@ -158,38 +158,38 @@ public class KeyAdderWidget extends FlowLayout {
         return false;
     }
 
-    private static boolean typeNeedsValue(TagType<?> type) {
-        return type != EndTag.TYPE
-            && type != CompoundTag.TYPE
-            && type != ListTag.TYPE
-            && type != ByteArrayTag.TYPE
-            && type != IntArrayTag.TYPE
-            && type != LongArrayTag.TYPE;
+    private static boolean typeNeedsValue(NbtType<?> type) {
+        return type != NbtEnd.TYPE
+            && type != NbtCompound.TYPE
+            && type != NbtList.TYPE
+            && type != NbtByteArray.TYPE
+            && type != NbtIntArray.TYPE
+            && type != NbtLongArray.TYPE;
     }
 
-    private static boolean typeNeedsSize(TagType<?> type) {
-        return type == ByteArrayTag.TYPE
-            || type == IntArrayTag.TYPE
-            || type == LongArrayTag.TYPE;
+    private static boolean typeNeedsSize(NbtType<?> type) {
+        return type == NbtByteArray.TYPE
+            || type == NbtIntArray.TYPE
+            || type == NbtLongArray.TYPE;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private boolean verifyValue(String value) {
-        if (type == ByteArrayTag.TYPE
-         || type == IntArrayTag.TYPE
-         || type == LongArrayTag.TYPE) {
+        if (type == NbtByteArray.TYPE
+         || type == NbtIntArray.TYPE
+         || type == NbtLongArray.TYPE) {
             return tryRun(() -> Integer.parseInt(value));
-        } else if (type == ByteTag.TYPE) {
+        } else if (type == NbtByte.TYPE) {
             return tryRun(() -> Byte.parseByte(value));
-        } else if (type == ShortTag.TYPE) {
+        } else if (type == NbtShort.TYPE) {
             return tryRun(() -> Short.parseShort(value));
-        } else if (type == IntTag.TYPE) {
+        } else if (type == NbtInt.TYPE) {
             return tryRun(() -> Integer.parseInt(value));
-        } else if (type == LongTag.TYPE) {
+        } else if (type == NbtLong.TYPE) {
             return tryRun(() -> Long.parseLong(value));
-        } else if (type == FloatTag.TYPE) {
+        } else if (type == NbtFloat.TYPE) {
             return tryRun(() -> Float.parseFloat(value));
-        } else if (type == DoubleTag.TYPE) {
+        } else if (type == NbtDouble.TYPE) {
             return tryRun(() -> Double.parseDouble(value));
         } else {
             return true;
