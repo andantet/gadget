@@ -14,7 +14,6 @@ import net.minecraft.network.state.*;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import org.apache.commons.logging.Log;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
@@ -33,59 +32,7 @@ public class PacketDumpDeserializer {
 
     public static ReadPacketDump readFrom(ProgressToast toast, Path path) throws IOException {
         try (var is = toast.loadWithProgress(path)) {
-            if (path.toString().endsWith(".dump"))
-                return PacketDumpDeserializer.readV0(is);
-            else
-                return PacketDumpDeserializer.readNew(is);
-        }
-    }
-
-    public static ReadPacketDump readV0(InputStream is) {
-        List<DumpedPacket> list = new ArrayList<>();
-
-        try (BufferedInputStream bis = new BufferedInputStream(is)) {
-            PacketByteBuf buf = PacketByteBufs.create();
-
-            Int2ObjectMap<Identifier> loginQueryChannels = new Int2ObjectOpenHashMap<>();
-
-            while (true) {
-                OptionalInt length = readInt(bis, true);
-
-                if (length.isEmpty()) return new ReadPacketDump(list, null);
-
-                buf.readerIndex(0);
-                buf.writerIndex(0);
-
-                buf.writeBytes(bis.readNBytes(length.getAsInt()));
-
-                short flags = buf.readShort();
-                boolean outbound = (flags & 1) != 0;
-                NetworkPhase phase = switch (flags & 0b1110) {
-                    case 0b0000 -> NetworkPhase.HANDSHAKING;
-                    case 0b0100 -> NetworkPhase.STATUS;
-                    case 0b0110 -> NetworkPhase.LOGIN;
-                    case 0b1110 -> NetworkPhase.CONFIGURATION;
-                    case 0b0010 -> NetworkPhase.PLAY;
-                    default -> throw new IllegalStateException();
-                };
-                int size = buf.readableBytes();
-
-                // todo: actually gather DRM info
-                NetworkState<?> state = createState(phase, outbound ? NetworkSide.SERVERBOUND : NetworkSide.CLIENTBOUND, DynamicRegistryManager.of(Registries.REGISTRIES));
-
-                Packet<?> packet = PacketDumping.readPacket(buf, state);
-                Identifier channelId = NetworkUtil.getChannelOrNull(packet);
-
-                if (packet instanceof LoginQueryRequestS2CPacket req) {
-                    loginQueryChannels.put(req.queryId(), req.payload().id());
-                } else if (packet instanceof LoginQueryResponseC2SPacket res) {
-                    channelId = loginQueryChannels.get(res.queryId());
-                }
-
-                list.add(new DumpedPacket(outbound, phase, packet, channelId, 0, size));
-            }
-        } catch (IOException e) {
-            return new ReadPacketDump(list, e);
+            return PacketDumpDeserializer.readNew(is);
         }
     }
 
