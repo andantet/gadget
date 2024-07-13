@@ -13,7 +13,8 @@ public class FunnyItem extends Item {
     @Override
     public Text getName(ItemStack stack) {
         if (Screen.hasShiftDown()) {
-            stack.getOrCreateNbt().putString("owl", "yay");
+            // todo: fix this.
+//            stack.getOrCreateNbt().putString("owl", "yay");
         }
 
         return super.getName(stack);
