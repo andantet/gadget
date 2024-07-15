@@ -6,7 +6,7 @@ import net.minecraft.network.NetworkState;
 import net.minecraft.network.PacketByteBuf;
 
 public record GadgetReadErrorPacket(byte[] data, int packetId, Exception exception) implements FakeGadgetPacket {
-    public static final int ID = -3;
+    public static final int ID = -2;
 
     public static GadgetReadErrorPacket from(PacketByteBuf buf, int packetId, Exception exception) {
         byte[] data = new byte[buf.readableBytes()];

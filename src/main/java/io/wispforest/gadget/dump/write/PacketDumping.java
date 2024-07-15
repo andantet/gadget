@@ -24,11 +24,8 @@ public final class PacketDumping {
 
     static {
         register(GadgetWriteErrorPacket.ID, GadgetWriteErrorPacket::read);
-        register(GadgetBundlePacket.ID, GadgetBundlePacket::read);
 //        register(GadgetReadErrorPacket.ID, GadgetReadErrorPacket::read);
 
-        // TODO: return this.
-//        register(GadgetRecipesS2CPacket.ID, (buf, state) -> GadgetRecipesS2CPacket.read(buf, state));
     }
 
     public static void register(int id, FakeGadgetPacket.Reader<?> reader) {
@@ -43,15 +40,6 @@ public final class PacketDumping {
         int packetId = 0;
 
         try {
-            if (packet instanceof BundlePacket<?> bundle) {
-                packet = GadgetBundlePacket.wrap(bundle);
-            }
-
-            // TODO: return this.
-//            if (packet instanceof SynchronizeRecipesS2CPacket recipes) {
-//                packet = new GadgetRecipesS2CPacket(recipes.getRecipes());
-//            }
-
             if (packet instanceof FakeGadgetPacket fakePacket) {
                 packetId = fakePacket.id();
                 buf.writeVarInt(packetId);
