@@ -27,7 +27,7 @@ public final class OwoSupport {
 
     public static void init() {
         PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            if (!(NetworkUtil.unwrapCustom(packet.packet()) instanceof MessagePayloadAccessor payload)) return null;
+            if (!(packet.customPayload() instanceof MessagePayloadAccessor payload)) return null;
 
             return new ChannelPacket(payload.getMessage());
         });
@@ -42,7 +42,7 @@ public final class OwoSupport {
         }
 
         PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            if (!(NetworkUtil.unwrapCustom(packet.packet()) instanceof ParticleSystemPayloadAccessor payload)) return null;
+            if (!(packet.customPayload() instanceof ParticleSystemPayloadAccessor payload)) return null;
 
             ParticleSystemController controller = ParticleSystemController.REGISTERED_CONTROLLERS.get(payload.getId().id());
             Vec3d pos = payload.getPos();
@@ -60,13 +60,13 @@ public final class OwoSupport {
         });
 
         PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            if (!(NetworkUtil.unwrapCustom(packet.packet()) instanceof OwoHandshake.HandshakeRequest payload)) return null;
+            if (!(packet.customPayload() instanceof OwoHandshake.HandshakeRequest payload)) return null;
 
             return new HandshakeRequest(payload);
         });
 
         PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            if (!(NetworkUtil.unwrapCustom(packet.packet()) instanceof HandshakeResponseAccessor payload)) return null;
+            if (!(packet.customPayload() instanceof HandshakeResponseAccessor payload)) return null;
 
             return new HandshakeResponse(payload.getRequiredChannels(), payload.getRequiredControllers(), payload.getOptionalChannels());
         });

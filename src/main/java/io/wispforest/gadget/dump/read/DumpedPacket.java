@@ -1,6 +1,7 @@
 package io.wispforest.gadget.dump.read;
 
 import io.wispforest.gadget.util.ContextData;
+import io.wispforest.gadget.util.NetworkUtil;
 import net.minecraft.network.NetworkPhase;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.util.Identifier;
@@ -43,6 +44,10 @@ public final class DumpedPacket extends ContextData<DumpedPacket> {
 
     public Packet<?> packet() {
         return packet;
+    }
+
+    public Object customPayload() {
+        return NetworkUtil.unwrapCustom(packet);
     }
 
     public Identifier channelId() {

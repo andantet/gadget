@@ -30,7 +30,7 @@ public final class PacketHandlers {
             }
 
             if (packet.channelId() != null) {
-                return new CustomPayloadUnwrappedPacket(NetworkUtil.unwrapCustom(packet.packet()));
+                return new CustomPayloadUnwrappedPacket(packet.customPayload());
             } else {
                 return new VanillaUnwrappedPacket(packet.packet());
             }

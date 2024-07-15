@@ -24,31 +24,31 @@ public final class FapiSupport {
 
     public static void init() {
         PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            if (!(NetworkUtil.unwrapCustom(packet.packet()) instanceof RegistrationPayload payload)) return null;
+            if (!(packet.customPayload() instanceof RegistrationPayload payload)) return null;
 
             return new MinecraftRegisterPacket(payload);
         });
 
         PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            if (!(NetworkUtil.unwrapCustom(packet.packet()) instanceof CommonVersionPayload payload)) return null;
+            if (!(packet.customPayload() instanceof CommonVersionPayload payload)) return null;
 
             return new CommonVersionPacket(payload);
         });
 
         PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            if (!(NetworkUtil.unwrapCustom(packet.packet()) instanceof CommonRegisterPayload payload)) return null;
+            if (!(packet.customPayload() instanceof CommonRegisterPayload payload)) return null;
 
             return new CommonRegisterPacket(payload);
         });
 
         PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            if (!(NetworkUtil.unwrapCustom(packet.packet()) instanceof CustomIngredientPayloadS2C payload)) return null;
+            if (!(packet.customPayload() instanceof CustomIngredientPayloadS2C payload)) return null;
 
             return new CustomIngredientS2CPacket(payload);
         });
 
         PacketUnwrapper.EVENT.register((packet, errSink) -> {
-            if (!(NetworkUtil.unwrapCustom(packet.packet()) instanceof CustomIngredientPayloadC2S payload)) return null;
+            if (!(packet.customPayload() instanceof CustomIngredientPayloadC2S payload)) return null;
 
             return new CustomIngredientC2SPacket(payload);
         });
