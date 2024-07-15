@@ -1,9 +1,10 @@
 package io.wispforest.gadget.dump.fake;
 
+import io.netty.buffer.ByteBuf;
 import io.wispforest.gadget.dump.read.unwrapped.UnprocessedUnwrappedPacket;
 import io.wispforest.gadget.dump.read.unwrapped.UnwrappedPacket;
-import net.minecraft.network.NetworkState;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 
 public record GadgetReadErrorPacket(byte[] data, int packetId, Exception exception) implements FakeGadgetPacket {
     public static final int ID = -2;
@@ -21,7 +22,7 @@ public record GadgetReadErrorPacket(byte[] data, int packetId, Exception excepti
     }
 
     @Override
-    public void writeToDump(PacketByteBuf buf, NetworkState<?> state) {
+    public PacketCodec<ByteBuf, GadgetReadErrorPacket> codec() {
         throw new UnsupportedOperationException();
     }
 

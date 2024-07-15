@@ -1,8 +1,8 @@
 package io.wispforest.gadget.dump.fake;
 
+import io.netty.buffer.ByteBuf;
 import io.wispforest.gadget.dump.read.unwrapped.UnwrappedPacket;
-import net.minecraft.network.NetworkState;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.listener.PacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.PacketType;
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 public interface FakeGadgetPacket extends Packet<PacketListener> {
     int id();
 
-    void writeToDump(PacketByteBuf buf, NetworkState<?> state);
+    PacketCodec<ByteBuf, ? extends FakeGadgetPacket> codec();
 
     default Packet<?> unwrapVanilla() {
         return this;
@@ -24,6 +24,11 @@ public interface FakeGadgetPacket extends Packet<PacketListener> {
         throw new UnsupportedOperationException("Unrenderable packet.");
     }
 
+    default boolean isVirtual() {
+        return false;
+    }
+
+    // region vanilla stubs
     @Override
     default void apply(PacketListener listener) {
         throw new IllegalStateException();
@@ -33,9 +38,5 @@ public interface FakeGadgetPacket extends Packet<PacketListener> {
     default PacketType<? extends Packet<PacketListener>> getPacketId() {
         throw new IllegalStateException();
     }
-
-    @FunctionalInterface
-    interface Reader<T extends FakeGadgetPacket> {
-        T read(PacketByteBuf buf, NetworkState<?> state);
-    }
+    // endregion
 }

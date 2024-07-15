@@ -1,5 +1,7 @@
 package io.wispforest.gadget.dump.read;
 
+import io.wispforest.gadget.dump.fake.FakeGadgetPacket;
+import io.wispforest.gadget.dump.fake.GadgetDynamicRegistriesPacket;
 import io.wispforest.gadget.dump.write.PacketDumping;
 import io.wispforest.gadget.util.NetworkUtil;
 import io.wispforest.gadget.util.ProgressToast;
@@ -13,16 +15,23 @@ import net.minecraft.network.packet.s2c.login.LoginQueryRequestS2CPacket;
 import net.minecraft.network.state.*;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryLoader;
+import net.minecraft.resource.ResourceFactory;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 public class PacketDumpDeserializer {
@@ -59,6 +68,7 @@ public class PacketDumpDeserializer {
         PacketByteBuf buf = PacketByteBufs.create();
 
         Int2ObjectMap<Identifier> loginQueryChannels = new Int2ObjectOpenHashMap<>();
+        DynamicRegistryManager registries = DynamicRegistryManager.of(Registries.REGISTRIES);
 
         try {
             while (true) {
@@ -86,7 +96,7 @@ public class PacketDumpDeserializer {
                 int size = buf.readableBytes();
 
                 // todo: actually gather DRM info
-                NetworkState<?> state = createState(phase, outbound ? NetworkSide.SERVERBOUND : NetworkSide.CLIENTBOUND, DynamicRegistryManager.of(Registries.REGISTRIES));
+                NetworkState<?> state = createState(phase, outbound ? NetworkSide.SERVERBOUND : NetworkSide.CLIENTBOUND, registries);
 
                 Packet<?> packet = PacketDumping.readPacket(buf, state);
                 Identifier channelId = NetworkUtil.getChannelOrNull(packet);
@@ -95,7 +105,14 @@ public class PacketDumpDeserializer {
                     loginQueryChannels.put(req.queryId(), req.payload().id());
                 } else if (packet instanceof LoginQueryResponseC2SPacket res) {
                     channelId = loginQueryChannels.get(res.queryId());
+                } else if (packet instanceof GadgetDynamicRegistriesPacket dyn) {
+                    var staticRegistries = DynamicRegistryManager.of(Registries.REGISTRIES);
+                    var network = RegistryLoader.loadFromNetwork(dyn.registries(), ResourceFactory.MISSING, DynamicRegistryManager.of(Registries.REGISTRIES), RegistryLoader.SYNCED_REGISTRIES);
+
+                    registries = new DynamicRegistryManager.ImmutableImpl(Stream.of(staticRegistries.streamAllRegistries(), network.streamAllRegistries()).flatMap(Function.identity()));
                 }
+
+                if (packet instanceof FakeGadgetPacket fake && fake.isVirtual()) continue;
 
                 list.add(new DumpedPacket(outbound, state.id(), packet, channelId, sentAt, size));
             }

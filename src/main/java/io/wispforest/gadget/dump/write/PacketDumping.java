@@ -2,35 +2,34 @@ package io.wispforest.gadget.dump.write;
 
 import io.netty.buffer.ByteBuf;
 import io.wispforest.gadget.Gadget;
-import io.wispforest.gadget.dump.fake.*;
-import io.wispforest.gadget.util.SlicingPacketByteBuf;
+import io.wispforest.gadget.dump.fake.FakeGadgetPacket;
+import io.wispforest.gadget.dump.fake.GadgetDynamicRegistriesPacket;
+import io.wispforest.gadget.dump.fake.GadgetReadErrorPacket;
+import io.wispforest.gadget.dump.fake.GadgetWriteErrorPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.network.NetworkPhase;
-import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.BundlePacket;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 
 public final class PacketDumping {
-    private static final Int2ObjectMap<FakeGadgetPacket.Reader<?>> PACKETS = new Int2ObjectOpenHashMap<>();
+    private static final Int2ObjectMap<PacketCodec<ByteBuf, ? extends FakeGadgetPacket>> PACKETS = new Int2ObjectOpenHashMap<>();
 
     private PacketDumping() {
 
     }
 
     static {
-        register(GadgetWriteErrorPacket.ID, GadgetWriteErrorPacket::read);
-//        register(GadgetReadErrorPacket.ID, GadgetReadErrorPacket::read);
+        register(GadgetWriteErrorPacket.ID, GadgetWriteErrorPacket.CODEC);
+//        register(GadgetReadErrorPacket.ID, GadgetReadErrorPacket.CODEC);
+        register(GadgetDynamicRegistriesPacket.ID, GadgetDynamicRegistriesPacket.CODEC);
 
     }
 
-    public static void register(int id, FakeGadgetPacket.Reader<?> reader) {
-        if (PACKETS.put(id, reader) != null) {
-            throw new IllegalStateException("This reader on " + id + " collides with another reader");
+    public static void register(int id, PacketCodec<ByteBuf, ? extends FakeGadgetPacket> codec) {
+        if (PACKETS.put(id, codec) != null) {
+            throw new IllegalStateException("Codec on " + id + " collides with another codec");
         }
     }
 
@@ -43,7 +42,7 @@ public final class PacketDumping {
             if (packet instanceof FakeGadgetPacket fakePacket) {
                 packetId = fakePacket.id();
                 buf.writeVarInt(packetId);
-                fakePacket.writeToDump(buf, state);
+                ((PacketCodec<ByteBuf, FakeGadgetPacket>) fakePacket.codec()).encode(buf, fakePacket);
                 return;
             }
 
@@ -55,7 +54,7 @@ public final class PacketDumping {
 
             GadgetWriteErrorPacket writeError = GadgetWriteErrorPacket.fromThrowable(packetId, e);
             buf.writeVarInt(writeError.id());
-            writeError.writeToDump(buf, state);
+            writeError.codec().encode(buf, writeError);
         }
     }
 
@@ -64,9 +63,9 @@ public final class PacketDumping {
         int packetId = buf.readVarInt();
 
         try {
-            FakeGadgetPacket.Reader<?> fakeReader = PACKETS.get(packetId);
-            if (fakeReader != null) {
-                return fakeReader.read(buf, state).unwrapVanilla();
+            PacketCodec<ByteBuf, ? extends FakeGadgetPacket> fakeCodec = PACKETS.get(packetId);
+            if (fakeCodec != null) {
+                return fakeCodec.decode(buf).unwrapVanilla();
             }
 
             buf.readerIndex(startOfData);

@@ -26,6 +26,7 @@
     ],
     "client": [
         "client.ChatHudAccessor",
+        "client.ClientConfigurationNetworkHandlerMixin",
         "client.DisconnectedScreenMixin",
         "client.EntryListWidgetAccessor",
         "client.EntryListWidgetEntryAccessor",

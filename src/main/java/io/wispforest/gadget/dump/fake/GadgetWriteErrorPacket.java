@@ -1,20 +1,21 @@
 package io.wispforest.gadget.dump.fake;
 
+import io.netty.buffer.ByteBuf;
 import io.wispforest.gadget.dump.read.unwrapped.UnwrappedPacket;
 import io.wispforest.gadget.util.ThrowableUtil;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.NetworkState;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 
 public record GadgetWriteErrorPacket(int packetId, String exceptionText) implements FakeGadgetPacket {
     public static final int ID = -1;
+    public static final PacketCodec<ByteBuf, GadgetWriteErrorPacket> CODEC = PacketCodec.tuple(
+        PacketCodecs.VAR_INT, GadgetWriteErrorPacket::packetId,
+        PacketCodecs.STRING, GadgetWriteErrorPacket::exceptionText,
+        GadgetWriteErrorPacket::new
+    );
 
     public static GadgetWriteErrorPacket fromThrowable(int packetId, Throwable t) {
         return new GadgetWriteErrorPacket(packetId, ThrowableUtil.throwableToString(t));
-    }
-
-    public static GadgetWriteErrorPacket read(PacketByteBuf buf, NetworkState<?> state) {
-        return new GadgetWriteErrorPacket(buf.readVarInt(), buf.readString());
     }
 
     @Override
@@ -23,9 +24,8 @@ public record GadgetWriteErrorPacket(int packetId, String exceptionText) impleme
     }
 
     @Override
-    public void writeToDump(PacketByteBuf buf, NetworkState<?> state) {
-        buf.writeVarInt(packetId);
-        buf.writeString(exceptionText);
+    public PacketCodec<ByteBuf, GadgetWriteErrorPacket> codec() {
+        return CODEC;
     }
 
     @Override

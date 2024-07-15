@@ -2,11 +2,14 @@ package io.wispforest.gadget.client.dump;
 
 import io.wispforest.gadget.Gadget;
 import io.wispforest.gadget.client.gui.NotificationToast;
+import io.wispforest.gadget.dump.fake.GadgetDynamicRegistriesPacket;
 import io.wispforest.gadget.dump.write.PacketDumpWriter;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
+import net.minecraft.network.state.ConfigurationStates;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import org.slf4j.Logger;
@@ -36,6 +39,11 @@ public class ClientPacketDumper {
             WRITER = new PacketDumpWriter(DUMP_DIR.resolve(filename));
 
             LOGGER.info("Started dumping to {}", filename);
+
+            var handler = MinecraftClient.getInstance().getNetworkHandler();
+            if (handler != null) {
+                dump(GadgetDynamicRegistriesPacket.fromRegistries(handler.getRegistryManager()), ConfigurationStates.S2C);
+            }
 
             if (doToast)
                 new NotificationToast(
