@@ -1,8 +1,6 @@
 package io.wispforest.gadget.util;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.wispforest.gadget.dump.read.DumpedPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.Packet;

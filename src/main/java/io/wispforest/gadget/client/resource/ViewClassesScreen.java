@@ -1,7 +1,6 @@
 package io.wispforest.gadget.client.resource;
 
 import io.wispforest.gadget.Gadget;
-import io.wispforest.gadget.early.GadgetMixinExtension;
 import io.wispforest.gadget.client.DialogUtil;
 import io.wispforest.gadget.client.gui.GuiUtil;
 import io.wispforest.gadget.client.gui.LayoutCacheWrapper;
@@ -9,6 +8,7 @@ import io.wispforest.gadget.client.gui.SubObjectContainer;
 import io.wispforest.gadget.decompile.KnotUtil;
 import io.wispforest.gadget.decompile.QuiltflowerHandler;
 import io.wispforest.gadget.decompile.QuiltflowerManager;
+import io.wispforest.gadget.early.GadgetMixinExtension;
 import io.wispforest.gadget.util.ProgressToast;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.component.Components;
@@ -19,7 +19,6 @@ import io.wispforest.owo.ui.core.*;
 import io.wispforest.owo.ui.util.UISounds;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;

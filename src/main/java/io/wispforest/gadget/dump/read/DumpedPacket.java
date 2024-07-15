@@ -2,8 +2,6 @@ package io.wispforest.gadget.dump.read;
 
 import io.wispforest.gadget.util.ContextData;
 import net.minecraft.network.NetworkPhase;
-import net.minecraft.network.NetworkState;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.util.Identifier;
 

@@ -1,6 +1,5 @@
 package io.wispforest.gadget.early;
 
-import org.apache.logging.log4j.LogManager;
 import org.objectweb.asm.tree.ClassNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

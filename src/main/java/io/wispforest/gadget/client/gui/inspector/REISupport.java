@@ -1,7 +1,6 @@
 package io.wispforest.gadget.client.gui.inspector;
 
 import me.shedaniel.rei.api.client.REIRuntime;
-import me.shedaniel.rei.api.client.gui.widgets.WidgetWithBounds;
 import me.shedaniel.rei.api.client.registry.screen.OverlayDecider;
 import me.shedaniel.rei.api.client.registry.screen.ScreenRegistry;
 import net.minecraft.client.MinecraftClient;

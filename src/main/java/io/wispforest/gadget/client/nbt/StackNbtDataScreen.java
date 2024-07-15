@@ -1,25 +1,5 @@
 package io.wispforest.gadget.client.nbt;
 
-import io.wispforest.gadget.client.ServerData;
-import io.wispforest.gadget.network.GadgetNetworking;
-import io.wispforest.gadget.network.packet.c2s.ReplaceStackC2SPacket;
-import io.wispforest.owo.ui.base.BaseOwoScreen;
-import io.wispforest.owo.ui.component.Components;
-import io.wispforest.owo.ui.container.Containers;
-import io.wispforest.owo.ui.container.FlowLayout;
-import io.wispforest.owo.ui.container.ScrollContainer;
-import io.wispforest.owo.ui.core.*;
-import io.wispforest.owo.ui.util.UISounds;
-import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.text.Text;
-import org.jetbrains.annotations.NotNull;
-import org.lwjgl.glfw.GLFW;
-
-import java.util.function.Consumer;
-
 // todo: fix this lmao
 
 //public class StackNbtDataScreen extends BaseOwoScreen<FlowLayout> {

@@ -2,7 +2,6 @@ package io.wispforest.gadget.client.dump.handler;
 
 import io.wispforest.gadget.dump.read.DumpedPacket;
 import io.wispforest.gadget.util.ErrorSink;
-import io.wispforest.gadget.util.NetworkUtil;
 import io.wispforest.owo.ui.container.FlowLayout;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
