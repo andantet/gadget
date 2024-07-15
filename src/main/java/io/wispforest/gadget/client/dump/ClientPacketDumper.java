@@ -96,8 +96,8 @@ public class ClientPacketDumper {
 
         if (writer == null) return;
 
-//        writer.flush();
-//        LOGGER.info("Flushing packet dump");
+        writer.flush();
+        LOGGER.info("Flushing packet dump");
     }
 
     public static boolean isDumping() {

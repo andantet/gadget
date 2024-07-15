@@ -1,14 +1,13 @@
 package io.wispforest.gadget.mixin.client;
 
-import com.llamalad7.mixinextras.injector.WrapWithCondition;
-import io.wispforest.gadget.Gadget;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import io.wispforest.gadget.client.MatrixStackLogger;
 import io.wispforest.gadget.client.dump.ClientPacketDumper;
 import io.wispforest.gadget.client.dump.DumpPrimer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import org.objectweb.asm.Opcodes;
-import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -35,11 +34,15 @@ public class MinecraftClientMixin {
         }
     }
 
-    // TODO: fix this.
+    @Inject(method = "render", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/client/MinecraftClient;paused:Z"))
+    private void storePrevPaused(boolean tick, CallbackInfo ci, @Share("prevPaused") LocalBooleanRef prevPaused) {
+        prevPaused.set(this.paused);
+    }
 
-//    @Inject(method = "render", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/client/MinecraftClient;paused:Z", shift = At.Shift.AFTER))
-//    private void flushDump(boolean tick, CallbackInfo ci) {
-//        if (this.paused)
-//            ClientPacketDumper.flushIfNeeded();
-//    }
+    @Inject(method = "render", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/client/MinecraftClient;paused:Z", shift = At.Shift.AFTER))
+    private void flushDump(boolean tick, CallbackInfo ci, @Share("prevPaused") LocalBooleanRef prevPaused) {
+        if (!prevPaused.get() && paused) {
+            ClientPacketDumper.flushIfNeeded();
+        }
+    }
 }
