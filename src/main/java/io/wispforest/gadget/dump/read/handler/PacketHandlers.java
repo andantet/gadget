@@ -4,12 +4,10 @@ import io.wispforest.gadget.Gadget;
 import io.wispforest.gadget.dump.fake.FakeGadgetPacket;
 import io.wispforest.gadget.dump.read.UnwrappedPacketData;
 import io.wispforest.gadget.dump.read.unwrapped.CustomPayloadUnwrappedPacket;
-import io.wispforest.gadget.dump.read.unwrapped.UnprocessedUnwrappedPacket;
 import io.wispforest.gadget.dump.read.unwrapped.VanillaUnwrappedPacket;
 import io.wispforest.gadget.util.NetworkUtil;
 import io.wispforest.gadget.util.ReflectionUtil;
 import net.fabricmc.fabric.api.event.Event;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
 public final class PacketHandlers {
@@ -24,7 +22,6 @@ public final class PacketHandlers {
     public static void init() {
         OwoSupport.init();
         FapiSupport.init();
-        MinecraftSupport.init();
 
         PacketUnwrapper.EVENT.addPhaseOrdering(Event.DEFAULT_PHASE, LAST_PHASE);
         PacketUnwrapper.EVENT.register(LAST_PHASE, (packet, errSink) -> {

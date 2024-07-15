@@ -16,11 +16,13 @@
         "owo.BaseComponentMixin",
         "owo.BaseParentComponentMixin",
         "owo.ComponentMixin",
-        "owo.IndexedEndecAccessor",
-        "owo.OwoNetChannelAccessor",
+        "owo.HandshakeResponseAccessor",
+        "owo.MessagePayloadAccessor",
         "owo.OwoUIAdapterMixin",
         "owo.ParentComponentMixin",
-        "owo.ParticleSystemAccessor"
+        "owo.ParticleSystemAccessor",
+        "owo.ParticleSystemInstanceAccessor",
+        "owo.ParticleSystemPayloadAccessor"
     ],
     "client": [
         "client.ChatHudAccessor",
