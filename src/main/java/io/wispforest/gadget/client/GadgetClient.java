@@ -12,8 +12,10 @@ import io.wispforest.gadget.client.gui.ContextMenuScreens;
 import io.wispforest.gadget.client.gui.GadgetScreen;
 import io.wispforest.gadget.client.gui.inspector.UIInspector;
 import io.wispforest.gadget.client.log.ChatLogAppender;
+import io.wispforest.gadget.client.nbt.StackComponentDataScreen;
 import io.wispforest.gadget.client.resource.ViewResourcesScreen;
 import io.wispforest.gadget.mappings.MappingsManager;
+import io.wispforest.gadget.mixin.client.HandledScreenAccessor;
 import io.wispforest.gadget.network.BlockEntityTarget;
 import io.wispforest.gadget.network.EntityTarget;
 import io.wispforest.gadget.network.GadgetNetworking;
@@ -41,6 +43,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.Entity;
@@ -200,24 +204,24 @@ public class GadgetClient implements ClientModInitializer {
         }, TitleScreen.class, GameMenuScreen.class);
 
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-//            if (screen instanceof HandledScreen<?> handled)
-//                ScreenKeyboardEvents.allowKeyPress(screen).register((screen1, key, scancode, modifiers) -> {
-//                    if (!INSPECT_KEY.matchesKey(key, scancode)) return true;
-//
-//                    double mouseX = client.mouse.getX()
-//                        * (double)client.getWindow().getScaledWidth() / (double)client.getWindow().getWidth();
-//                    double mouseY = client.mouse.getY()
-//                        * (double)client.getWindow().getScaledHeight() / (double)client.getWindow().getHeight();
-//                    var slot = ((HandledScreenAccessor) handled).callGetSlotAt(mouseX, mouseY);
-//
-//                    if (slot == null) return true;
-//                    if (slot instanceof CreativeInventoryScreen.LockableSlot) return true;
-//                    if (slot.getStack().isEmpty()) return true;
-//
-//                    client.setScreen(new StackNbtDataScreen(handled, slot));
-//
-//                    return false;
-//                });
+            if (screen instanceof HandledScreen<?> handled)
+                ScreenKeyboardEvents.allowKeyPress(screen).register((screen1, key, scancode, modifiers) -> {
+                    if (!INSPECT_KEY.matchesKey(key, scancode)) return true;
+
+                    double mouseX = client.mouse.getX()
+                        * (double)client.getWindow().getScaledWidth() / (double)client.getWindow().getWidth();
+                    double mouseY = client.mouse.getY()
+                        * (double)client.getWindow().getScaledHeight() / (double)client.getWindow().getHeight();
+                    var slot = ((HandledScreenAccessor) handled).callGetSlotAt(mouseX, mouseY);
+
+                    if (slot == null) return true;
+                    if (slot instanceof CreativeInventoryScreen.LockableSlot) return true;
+                    if (slot.getStack().isEmpty()) return true;
+
+                    client.setScreen(new StackComponentDataScreen(handled, slot));
+
+                    return false;
+                });
 
             ScreenKeyboardEvents.allowKeyPress(screen).register((screen1, key, scancode, modifiers) -> {
                 if (!Screen.hasShiftDown()) return true;
