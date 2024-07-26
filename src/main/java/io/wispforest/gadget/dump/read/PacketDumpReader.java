@@ -102,7 +102,7 @@ public class PacketDumpReader {
 
         if (startTime < endTime) {
             sb.append(" [");
-            sb.append(DurationFormatUtils.formatDurationHMS(packet.sentAt() - startTime));
+            sb.append(TimeUtil.toHMS(packet.sentAt() - startTime));
             sb.append("]");
         }
 

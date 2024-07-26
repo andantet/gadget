@@ -131,20 +131,8 @@ public class OpenDumpScreen extends BaseOwoScreen<FlowLayout> {
 
         timeSlider = new BasedSliderComponent(Sizing.fill(95));
         timeSlider
-            .tooltipFactory(value -> {
-                try {
-                    return Text.of(DurationFormatUtils.formatDurationHMS(currentTime(value) - reader.startTime()));
-                } catch (IllegalArgumentException e) {
-                    return Text.of("-" + DurationFormatUtils.formatDurationHMS(Math.abs(currentTime(value) - reader.startTime())));
-                } // this should probably use minecraft math and not java math.. but it's fine
-            })
-            .message(unused -> {
-                try {
-                    return Text.of(DurationFormatUtils.formatDurationHMS(currentTime() - reader.startTime()));
-                } catch (IllegalArgumentException e) {
-                    return Text.of("-" + DurationFormatUtils.formatDurationHMS(Math.abs(currentTime() - reader.startTime())));
-                }
-            });
+            .tooltipFactory(value -> Text.of(TimeUtil.toHMS(currentTime(value) - reader.startTime())))
+            .message(unused -> Text.of(TimeUtil.toHMS(currentTime() - reader.startTime())));
         timeSlider.onChanged().subscribe(value -> {
             rebuild(searchBox.getText(), currentTime());
         });
