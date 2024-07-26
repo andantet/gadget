@@ -29,6 +29,7 @@ import org.lwjgl.glfw.GLFW;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.Math;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -130,12 +131,20 @@ public class OpenDumpScreen extends BaseOwoScreen<FlowLayout> {
 
         timeSlider = new BasedSliderComponent(Sizing.fill(95));
         timeSlider
-            .tooltipFactory(value -> Text.of(
-                DurationFormatUtils.formatDurationHMS(currentTime(value) - reader.startTime())
-            ))
-            .message(unused -> Text.of(
-                DurationFormatUtils.formatDurationHMS(currentTime() - reader.startTime())
-            ));
+            .tooltipFactory(value -> {
+                try {
+                    return Text.of(DurationFormatUtils.formatDurationHMS(currentTime(value) - reader.startTime()));
+                } catch (IllegalArgumentException e) {
+                    return Text.of("-" + DurationFormatUtils.formatDurationHMS(Math.abs(currentTime(value) - reader.startTime())));
+                } // this should probably use minecraft math and not java math.. but it's fine
+            })
+            .message(unused -> {
+                try {
+                    return Text.of(DurationFormatUtils.formatDurationHMS(currentTime() - reader.startTime()));
+                } catch (IllegalArgumentException e) {
+                    return Text.of("-" + DurationFormatUtils.formatDurationHMS(Math.abs(currentTime() - reader.startTime())));
+                }
+            });
         timeSlider.onChanged().subscribe(value -> {
             rebuild(searchBox.getText(), currentTime());
         });
