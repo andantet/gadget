@@ -29,7 +29,7 @@ public class Gadget implements ModInitializer {
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER)
             MappingsManager.init();
 
-        for (EntrypointContainer<GadgetEntrypoint> container : FabricLoader.getInstance().getEntrypointContainers("gadget:init", GadgetEntrypoint.class)) {
+        for (EntrypointContainer<GadgetEntrypoint> container : FabricLoader.getInstance().getEntrypointContainers(GadgetEntrypoint.KEY, GadgetEntrypoint.class)) {
             try {
                 container.getEntrypoint().onGadgetInit();
             } catch (Exception e) {

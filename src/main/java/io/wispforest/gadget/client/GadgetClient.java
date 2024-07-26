@@ -244,7 +244,7 @@ public class GadgetClient implements ClientModInitializer {
             }
         });
 
-        for (EntrypointContainer<GadgetClientEntrypoint> container : FabricLoader.getInstance().getEntrypointContainers("gadget:client_init", GadgetClientEntrypoint.class)) {
+        for (EntrypointContainer<GadgetClientEntrypoint> container : FabricLoader.getInstance().getEntrypointContainers(GadgetClientEntrypoint.KEY, GadgetClientEntrypoint.class)) {
             try {
                 container.getEntrypoint().onGadgetClientInit();
             } catch (Exception e) {
