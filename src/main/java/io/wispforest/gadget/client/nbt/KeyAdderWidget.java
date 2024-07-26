@@ -82,6 +82,8 @@ public class KeyAdderWidget extends FlowLayout {
 
     private void onFieldFocusLost() {
         MinecraftClient.getInstance().send(() -> {
+            if (focusHandler() == null) return;
+
             var newFocused = focusHandler().focused();
 
             if (newFocused == nameField || newFocused == valueField) return;
