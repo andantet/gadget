@@ -18,7 +18,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.LongSupplier;
 
-@SuppressWarnings("UnstableApiUsage")
 public interface ProgressToast {
     static ProgressToast create(Text headText) {
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {

@@ -22,7 +22,6 @@ public abstract class ClientConfigurationNetworkHandlerMixin extends ClientCommo
         super(client, connection, connectionState);
     }
 
-    @SuppressWarnings({"UnresolvedMixinReference", "LocalMayBeArgsOnly"}) // mcdev is drunk.
     @Inject(method = "onReady", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;transitionInbound(Lnet/minecraft/network/NetworkState;Lnet/minecraft/network/listener/PacketListener;)V"))
     private void writeRegistries(ReadyS2CPacket packet, CallbackInfo ci, @Local DynamicRegistryManager.Immutable registries) {
         if (!ClientPacketDumper.isDumping()) return;

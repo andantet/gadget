@@ -13,8 +13,6 @@ import net.minecraft.util.Identifier;
 import java.util.function.Supplier;
 
 public final class NetworkUtil {
-    private static final ThreadLocal<Supplier<PacketByteBuf>> TMP_BUF_SOURCE = ThreadLocal.withInitial(() -> SupplierUtil.weakLazy(PacketByteBufs::create));
-
     private NetworkUtil() {
 
     }
@@ -59,16 +57,5 @@ public final class NetworkUtil {
             buf.writeInt(endIdx - startIdx);
             buf.writerIndex(endIdx);
         };
-    }
-
-    public static PacketByteBuf readOfLengthIntoTmp(PacketByteBuf buf) {
-        PacketByteBuf tmpBuf = TMP_BUF_SOURCE.get().get();
-        int length = buf.readInt();
-
-        tmpBuf.readerIndex(0);
-        tmpBuf.writerIndex(0);
-        tmpBuf.writeBytes(buf, length);
-
-        return tmpBuf;
     }
 }
