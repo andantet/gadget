@@ -26,8 +26,8 @@ import io.wispforest.gadget.util.DownloadUtil;
 import io.wispforest.gadget.util.ProgressToast;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.mappingio.MappingVisitor;
-import net.fabricmc.mappingio.format.Tiny2Reader;
-import net.fabricmc.mappingio.format.Tiny2Writer;
+import net.fabricmc.mappingio.format.tiny.Tiny2FileReader;
+import net.fabricmc.mappingio.format.tiny.Tiny2FileWriter;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import net.minecraft.SharedConstants;
 import net.minecraft.text.Text;
@@ -54,7 +54,7 @@ public class QuiltMappings extends LoadingMappings {
 
             if (Files.exists(qmPath)) {
                 try (BufferedReader br = Files.newBufferedReader(qmPath)) {
-                    Tiny2Reader.read(br, visitor);
+                    Tiny2FileReader.read(br, visitor);
                     return;
                 }
             }
@@ -91,11 +91,11 @@ public class QuiltMappings extends LoadingMappings {
             toast.step(Text.translatable("message.gadget.progress.downloading_qm"));
             try (var is = toast.loadWithProgress(url);
                  var gz = new GZIPInputStream(is)) {
-                Tiny2Reader.read(new InputStreamReader(gz), tree);
+                Tiny2FileReader.read(new InputStreamReader(gz), tree);
             }
 
             try (var bw = Files.newBufferedWriter(qmPath)) {
-                tree.accept(new Tiny2Writer(bw, false));
+                tree.accept(new Tiny2FileWriter(bw, false));
             }
 
             tree.accept(visitor);

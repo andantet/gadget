@@ -3,7 +3,7 @@ package io.wispforest.gadget.mappings;
 import io.wispforest.gadget.util.ProgressToast;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.mappingio.MappingVisitor;
-import net.fabricmc.mappingio.format.Tiny2Reader;
+import net.fabricmc.mappingio.format.tiny.Tiny2FileReader;
 import net.minecraft.SharedConstants;
 import net.minecraft.text.Text;
 import org.apache.commons.io.FileUtils;
@@ -45,7 +45,7 @@ public final class IntermediaryLoader {
 
         try (FileSystem fs = FileSystems.newFileSystem(intermediaryPath, (ClassLoader) null);
              BufferedReader br = Files.newBufferedReader(fs.getPath("mappings/mappings.tiny"))) {
-            Tiny2Reader.read(br, visitor);
+            Tiny2FileReader.read(br, visitor);
         }
     }
 }

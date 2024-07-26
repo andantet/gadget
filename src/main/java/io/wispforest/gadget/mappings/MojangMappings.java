@@ -7,9 +7,9 @@ import io.wispforest.gadget.util.ProgressToast;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.mappingio.MappingVisitor;
 import net.fabricmc.mappingio.adapter.MappingSourceNsSwitch;
-import net.fabricmc.mappingio.format.ProGuardReader;
-import net.fabricmc.mappingio.format.Tiny2Reader;
-import net.fabricmc.mappingio.format.Tiny2Writer;
+import net.fabricmc.mappingio.format.proguard.ProGuardFileReader;
+import net.fabricmc.mappingio.format.tiny.Tiny2FileReader;
+import net.fabricmc.mappingio.format.tiny.Tiny2FileWriter;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import net.minecraft.SharedConstants;
 import net.minecraft.text.Text;
@@ -34,7 +34,7 @@ public class MojangMappings extends LoadingMappings {
 
             if (Files.exists(mojPath)) {
                 try (BufferedReader br = Files.newBufferedReader(mojPath)) {
-                    Tiny2Reader.read(br, visitor);
+                    Tiny2FileReader.read(br, visitor);
                     return;
                 }
             }
@@ -70,7 +70,7 @@ public class MojangMappings extends LoadingMappings {
             readProGuardInto(toast, JsonHelper.getString(serverMappings, "url"), sw);
 
             try (BufferedWriter bw = Files.newBufferedWriter(mojPath)) {
-                tree.accept(new Tiny2Writer(bw, false));
+                tree.accept(new Tiny2FileWriter(bw, false));
             }
 
             tree.accept(visitor);
@@ -81,7 +81,7 @@ public class MojangMappings extends LoadingMappings {
 
     private void readProGuardInto(ProgressToast toast, String url, MappingVisitor visitor) throws IOException {
         try (var is = toast.loadWithProgress(new URL(url))) {
-            ProGuardReader.read(new InputStreamReader(new BufferedInputStream(is)), "named", "official", visitor);
+            ProGuardFileReader.read(new InputStreamReader(new BufferedInputStream(is)), "named", "official", visitor);
         }
     }
 }

@@ -26,7 +26,7 @@ import io.wispforest.gadget.util.DownloadUtil;
 import io.wispforest.gadget.util.ProgressToast;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.mappingio.MappingVisitor;
-import net.fabricmc.mappingio.format.Tiny2Reader;
+import net.fabricmc.mappingio.format.tiny.Tiny2FileReader;
 import net.minecraft.SharedConstants;
 import net.minecraft.text.Text;
 import org.apache.commons.io.FileUtils;
@@ -76,7 +76,7 @@ public class YarnMappings extends LoadingMappings {
 
             try (FileSystem fs = FileSystems.newFileSystem(yarnPath, (ClassLoader) null)) {
                 try (var br = Files.newBufferedReader(fs.getPath("mappings/mappings.tiny"))) {
-                    Tiny2Reader.read(br, visitor);
+                    Tiny2FileReader.read(br, visitor);
                 }
             }
 
