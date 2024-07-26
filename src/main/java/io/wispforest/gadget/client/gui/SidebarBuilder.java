@@ -1,6 +1,7 @@
 package io.wispforest.gadget.client.gui;
 
 import io.wispforest.owo.ui.component.Components;
+import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.*;
@@ -43,10 +44,12 @@ public class SidebarBuilder {
     }
 
     public static class Button extends FlowLayout {
+        private final LabelComponent iconLabel;
+
         public Button(Text icon, Text tooltip) {
             super(Sizing.fixed(16), Sizing.fixed(16), Algorithm.VERTICAL);
 
-            child(Components.label(icon)
+            child((iconLabel = Components.label(icon))
                 .verticalTextAlignment(VerticalAlignment.CENTER)
                 .horizontalTextAlignment(HorizontalAlignment.CENTER)
                 .positioning(Positioning.absolute(5, 4))
@@ -62,6 +65,12 @@ public class SidebarBuilder {
 
             mouseLeave().subscribe(
                 () -> surface(Surface.BLANK));
+        }
+
+        public Button icon(Text icon) {
+            iconLabel.text(icon);
+
+            return this;
         }
     }
 

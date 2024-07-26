@@ -107,6 +107,23 @@
         "font": "gadget:monocraft"
     },
     "text.gadget.export_button.tooltip": "Export",
+    "text.gadget.encode_status.success": {
+        "text": "✔",
+        "color": "green"
+    },
+    "text.gadget.encode_status.success.tooltip": {
+        "text": "Component NBT is fully valid",
+        "color": "green"
+    },
+    "text.gadget.encode_status.failure": {
+        "text": "❌",
+        "color": "dark_red"
+    },
+    "text.gadget.encode_status.failure.tooltip": [
+        "",
+        {"text": "Component NBT is invalid and has not been applied.\n\n", "color": "dark_red"},
+        {"index": 0}
+    ],
     "text.gadget.back": "←",
     "text.gadget.back.tooltip": "Back",
     "text.gadget.open": {
