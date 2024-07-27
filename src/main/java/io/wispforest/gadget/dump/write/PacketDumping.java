@@ -6,6 +6,7 @@ import io.wispforest.gadget.dump.fake.FakeGadgetPacket;
 import io.wispforest.gadget.dump.fake.GadgetDynamicRegistriesPacket;
 import io.wispforest.gadget.dump.fake.GadgetReadErrorPacket;
 import io.wispforest.gadget.dump.fake.GadgetWriteErrorPacket;
+import io.wispforest.gadget.util.SlicingPacketByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.NetworkState;
@@ -46,7 +47,7 @@ public final class PacketDumping {
                 return;
             }
 
-            ((PacketCodec<ByteBuf, Object>)(Object) state.codec()).encode(buf, packet);
+            ((PacketCodec<ByteBuf, Object>)(Object) state.codec()).encode(new SlicingPacketByteBuf(buf), packet);
         } catch (Exception e) {
             buf.writerIndex(startWriteIdx);
 
