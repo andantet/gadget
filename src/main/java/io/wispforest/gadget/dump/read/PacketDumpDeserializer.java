@@ -8,6 +8,7 @@ import io.wispforest.gadget.util.ProgressToast;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.*;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.login.LoginQueryResponseC2SPacket;
@@ -15,13 +16,6 @@ import net.minecraft.network.packet.s2c.login.LoginQueryRequestS2CPacket;
 import net.minecraft.network.state.*;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryLoader;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.TagGroupLoader;
-import net.minecraft.registry.tag.TagPacketSerializer;
-import net.minecraft.resource.ResourceFactory;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,11 +27,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.function.Function;
-import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 public class PacketDumpDeserializer {
@@ -112,16 +103,7 @@ public class PacketDumpDeserializer {
                 } else if (packet instanceof LoginQueryResponseC2SPacket res) {
                     channelId = loginQueryChannels.get(res.queryId());
                 } else if (packet instanceof GadgetDynamicRegistriesPacket dyn) {
-                    var staticRegistries = DynamicRegistryManager.of(Registries.REGISTRIES);
-                    HashMap<RegistryKey<? extends Registry<?>>, RegistryLoader.ElementsAndTags> map = new HashMap<>();
-                    dyn.registries().forEach((registryRef, entries) -> map.put(registryRef, new RegistryLoader.ElementsAndTags(entries, TagPacketSerializer.Serialized.NONE)));
-
-                    List<Registry.PendingTagLoad<?>> loadList = new ArrayList<>();
-                    DynamicRegistryManager.Immutable immutable = DynamicRegistryManager.of(Registries.REGISTRIES);
-                    List<RegistryWrapper.Impl<?>> registriesData = TagGroupLoader.collectRegistries(immutable, loadList);
-                    var network = RegistryLoader.loadFromNetwork(map, ResourceFactory.MISSING, registriesData, RegistryLoader.SYNCED_REGISTRIES);
-
-                    registries = new DynamicRegistryManager.ImmutableImpl(Stream.of(staticRegistries.streamAllRegistries(), network.streamAllRegistries()).flatMap(Function.identity()));
+                    registries = MinecraftClient.getInstance().world.getRegistryManager();
                 }
 
                 if (packet instanceof FakeGadgetPacket fake && fake.isVirtual()) continue;
