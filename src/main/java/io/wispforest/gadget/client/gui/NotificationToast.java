@@ -5,6 +5,7 @@ import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.*;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.toast.Toast;
 import net.minecraft.client.toast.ToastManager;
@@ -13,6 +14,8 @@ import net.minecraft.text.Text;
 public class NotificationToast implements Toast {
     private final OwoUIAdapter<FlowLayout> adapter;
     private final MinecraftClient client = MinecraftClient.getInstance();
+
+    private Visibility visibility = Visibility.HIDE;
 
     public NotificationToast(Text headText, Text messageText) {
         this.adapter = OwoUIAdapter.createWithoutScreen(0, 0, 160, 32, Containers::verticalFlow);
@@ -45,9 +48,17 @@ public class NotificationToast implements Toast {
     }
 
     @Override
-    public Visibility draw(DrawContext ctx, ToastManager manager, long startTime) {
-        this.adapter.render(ctx, 0, 0, client.getRenderTickCounter().getTickDelta(false));
+    public void draw(DrawContext context, TextRenderer textRenderer, long startTime) {
+        this.adapter.render(context, 0, 0, client.getRenderTickCounter().getTickDelta(false));
+    }
 
-        return startTime > 5000 ? Visibility.HIDE : Visibility.SHOW;
+    @Override
+    public void update(ToastManager manager, long time) {
+        this.visibility = time > 5000 ? Visibility.HIDE : Visibility.SHOW;
+    }
+
+    @Override
+    public Visibility getVisibility() {
+        return this.visibility;
     }
 }
