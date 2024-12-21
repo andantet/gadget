@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
@@ -13,12 +14,8 @@ import net.minecraft.util.Identifier;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
 public class GadgetTestmodClient implements ClientModInitializer {
-    public static final FunnyItem FUNNY_ITEM = new FunnyItem();
-
     @Override
     public void onInitializeClient() {
-        Registry.register(Registries.ITEM, Identifier.of("gadget-testmod", "funny"), FUNNY_ITEM);
-
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(literal("gadget-testmod")
                 .then(literal("epic")
