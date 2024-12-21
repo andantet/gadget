@@ -2,13 +2,11 @@ package io.wispforest.gadget.mixin.owo;
 
 import io.wispforest.gadget.client.gui.ComponentEventCounter;
 import io.wispforest.owo.ui.core.OwoUIAdapter;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(OwoUIAdapter.class)
